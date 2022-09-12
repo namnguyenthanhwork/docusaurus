@@ -303,6 +303,10 @@ const config = {
             const nextVersionDocsDirPath = 'docs';
             return `https://github.com/facebook/docusaurus/edit/main/website/${nextVersionDocsDirPath}/${docPath}`;
           },
+          admonitions: {
+            keywords: ['my-custom-admonition'],
+            extendDefaults: true,
+          },
           showLastUpdateAuthor: true,
           showLastUpdateTime: true,
           remarkPlugins: [math, [npm2yarn, {sync: true}]],
@@ -360,7 +364,8 @@ const config = {
             }
           : undefined,
         sitemap: {
-          ignorePatterns: ['/tests/**'],
+          // Note: /tests/docs already has noIndex: true
+          ignorePatterns: ['/tests/{blog,pages}/**'],
         },
       }),
     ],
