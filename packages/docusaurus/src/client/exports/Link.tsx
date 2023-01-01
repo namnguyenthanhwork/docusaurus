@@ -117,7 +117,7 @@ function Link(
     }
   };
 
-  const onMouseEnter = () => {
+  const onInteractionEnter = () => {
     if (!preloaded.current && targetLink != null) {
       window.docusaurus.preload(targetLink);
       preloaded.current = true;
@@ -148,7 +148,7 @@ function Link(
   }
 
   return isRegularHtmlLink ? (
-    // eslint-disable-next-line jsx-a11y/anchor-has-content
+    // eslint-disable-next-line jsx-a11y/anchor-has-content, @docusaurus/no-html-links
     <a
       ref={innerRef}
       href={targetLink}
@@ -159,7 +159,8 @@ function Link(
   ) : (
     <LinkComponent
       {...props}
-      onMouseEnter={onMouseEnter}
+      onMouseEnter={onInteractionEnter}
+      onTouchStart={onInteractionEnter}
       innerRef={handleRef}
       to={targetLink}
       // Avoid "React does not recognize the `activeClassName` prop on a DOM

@@ -143,6 +143,14 @@ export default function getSwizzleConfig(): SwizzleConfig {
         description:
           'The color mode toggle to switch between light and dark mode.',
       },
+      'DocBreadcrumbs/Items': {
+        actions: {
+          eject: 'unsafe',
+          wrap: 'forbidden', // Can't wrap a folder
+        },
+        description:
+          'The components responsible for rendering the breadcrumb items',
+      },
       DocCardList: {
         actions: {
           eject: 'safe',
@@ -376,6 +384,14 @@ export default function getSwizzleConfig(): SwizzleConfig {
         // By default it's an empty placeholder for the user to fill
         description:
           'The search bar component of your site, appearing in the navbar.',
+      },
+      SkipToContent: {
+        actions: {
+          eject: 'safe',
+          wrap: 'safe',
+        },
+        description:
+          'The component responsible for implementing the accessibility "skip to content" link (https://www.w3.org/TR/WCAG20-TECHS/G1.html)',
       },
       'prism-include-languages': {
         actions: {

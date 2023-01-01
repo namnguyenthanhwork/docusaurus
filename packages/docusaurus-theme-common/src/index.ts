@@ -24,7 +24,11 @@ export {
   type ColorModeConfig,
 } from './utils/useThemeConfig';
 
-export {createStorageSlot, listStorageKeys} from './utils/storageUtils';
+export {
+  createStorageSlot,
+  useStorageSlot,
+  listStorageKeys,
+} from './utils/storageUtils';
 
 export {useContextualSearchFilters} from './utils/searchUtils';
 
@@ -80,3 +84,16 @@ export {usePrismTheme} from './hooks/usePrismTheme';
 export {useDocsPreferredVersion} from './contexts/docsPreferredVersion';
 
 export {processAdmonitionProps} from './utils/admonitionUtils';
+
+export {
+  SkipToContentFallbackId,
+  SkipToContentLink,
+} from './utils/skipToContentUtils';
+
+export {
+  UnlistedBannerTitle,
+  UnlistedBannerMessage,
+  UnlistedMetadata,
+} from './utils/unlistedUtils';
+
+export {ErrorBoundaryTryAgainButton} from './utils/errorBoundaryUtils';

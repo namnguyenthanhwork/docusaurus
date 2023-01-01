@@ -1913,12 +1913,21 @@ const Users: User[] = [
     tags: ['opensource'],
   },
   {
+    title: 'Seaography - 🧭 A GraphQL framework and code generator for SeaORM',
+    description:
+      'Seaography is a GraphQL framework for building GraphQL resolvers using SeaORM entities.',
+    preview: require('./showcase/Seaography.png'),
+    website: 'https://www.sea-ql.org/Seaography/',
+    source: 'https://github.com/SeaQL/seaql.github.io/tree/master/Seaography',
+    tags: ['opensource'],
+  },
+  {
     title: 'SeaORM - 🐚 An async & dynamic ORM for Rust',
     description:
       'A relational ORM to help you build web services in Rust with the familiarity of dynamic languages.',
     preview: require('./showcase/SeaORM.png'),
     website: 'https://www.sea-ql.org/SeaORM/',
-    source: 'https://github.com/SeaQL/seaql.github.io',
+    source: 'https://github.com/SeaQL/seaql.github.io/tree/master/SeaORM',
     tags: ['opensource', 'versioning'],
   },
   {
@@ -2171,6 +2180,14 @@ const Users: User[] = [
     tags: ['opensource', 'design'],
   },
   {
+    title: 'TamalWeb',
+    description: 'A web developers personal blog and portfolio helping other developers with tips',
+    preview: require('./showcase/tamalwebsite.png'),
+    website: 'https://tamalweb.com/',
+    source: 'https://github.com/tamalchowdhury/tamalwebsite',
+    tags: ['personal', 'opensource'],
+  },
+  {
     title: 'Taro',
     description: 'An open cross-end and cross-frame solution',
     preview: require('./showcase/docs-taro-zone.png'),
@@ -2252,7 +2269,7 @@ const Users: User[] = [
     description:
       'Open-source low-code platform to build & deploy internal tools with minimal engineering effort.',
     preview: require('./showcase/tooljet.png'),
-    website: 'https://docs.tooljet.com/docs/intro/',
+    website: 'https://docs.tooljet.com/docs/',
     source: 'https://github.com/ToolJet/ToolJet/tree/develop/docs',
     tags: ['opensource', 'design', 'large', 'product'],
   },
@@ -2560,11 +2577,11 @@ const Users: User[] = [
     tags: ['opensource','personal'],
   },
   {
-    title: 'Cho.sh',
-    description: 'Sunghyun Sho\'s Second Brain on the Web.',
+    title: 'Extracranial',
+    description: 'Sunghyun Cho\'s Second Brain on the Web.',
     preview: null,
     website: 'https://cho.sh/',
-    source: 'https://github.com/anaclumos/www',
+    source: 'https://github.com/anaclumos/extracranial',
     tags: ['opensource','personal','i18n'],
   },
   {

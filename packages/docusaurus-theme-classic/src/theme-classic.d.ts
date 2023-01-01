@@ -897,6 +897,7 @@ declare module '@theme/MDXComponents' {
   import type MDXUl from '@theme/MDXComponents/Ul';
   import type MDXImg from '@theme/MDXComponents/Img';
   import type Admonition from '@theme/Admonition';
+  import type Mermaid from '@theme/Mermaid';
 
   export type MDXComponentsObject = {
     readonly head: typeof MDXHead;
@@ -913,6 +914,7 @@ declare module '@theme/MDXComponents' {
     readonly h5: (props: ComponentProps<'h5'>) => JSX.Element;
     readonly h6: (props: ComponentProps<'h6'>) => JSX.Element;
     readonly admonition: typeof Admonition;
+    readonly mermaid: typeof Mermaid;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [tagName: string]: ComponentType<any>;
   };
@@ -1221,39 +1223,26 @@ declare module '@theme/SearchBar' {
   export default function SearchBar(): JSX.Element;
 }
 
-declare module '@theme/TabItem' {
-  import type {ReactNode} from 'react';
-
+declare module '@theme/Mermaid' {
   export interface Props {
-    readonly children: ReactNode;
-    readonly value: string;
-    readonly default?: boolean;
-    readonly label?: string;
-    readonly hidden?: boolean;
-    readonly className?: string;
-    readonly attributes?: {[key: string]: unknown};
+    value: string;
   }
+
+  export default function Mermaid(props: Props): JSX.Element;
+}
+
+declare module '@theme/TabItem' {
+  import type {TabItemProps} from '@docusaurus/theme-common/internal';
+
+  export interface Props extends TabItemProps {}
 
   export default function TabItem(props: Props): JSX.Element;
 }
 
 declare module '@theme/Tabs' {
-  import type {ReactElement} from 'react';
-  import type {Props as TabItemProps} from '@theme/TabItem';
+  import type {TabsProps} from '@docusaurus/theme-common/internal';
 
-  export interface Props {
-    readonly lazy?: boolean;
-    readonly block?: boolean;
-    readonly children: readonly ReactElement<TabItemProps>[];
-    readonly defaultValue?: string | null;
-    readonly values?: readonly {
-      value: string;
-      label?: string;
-      attributes?: {[key: string]: unknown};
-    }[];
-    readonly groupId?: string;
-    readonly className?: string;
-  }
+  export interface Props extends TabsProps {}
 
   export default function Tabs(props: Props): JSX.Element;
 }
@@ -1484,10 +1473,22 @@ declare module '@theme/Tag' {
   export default function Tag(props: Props): JSX.Element;
 }
 
+declare module '@theme/Unlisted' {
+  export interface Props {
+    className?: string;
+  }
+
+  export default function Unlisted(props: Props): JSX.Element;
+}
+
 declare module '@theme/prism-include-languages' {
   import type * as PrismNamespace from 'prismjs';
 
   export default function prismIncludeLanguages(
     PrismObject: typeof PrismNamespace,
   ): void;
+}
+
+declare module '@theme/DocBreadcrumbs/Items/Home' {
+  export default function HomeBreadcrumbItem(): JSX.Element;
 }
