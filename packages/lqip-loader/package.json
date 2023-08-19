@@ -17,17 +17,16 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@docusaurus/logger": "^3.0.0-alpha.0",
+    "@docusaurus/logger": "3.0.0-alpha.0",
     "file-loader": "^6.2.0",
     "lodash": "^4.17.21",
-    "sharp": "^0.31.0",
-    "tslib": "^2.4.0"
+    "sharp": "^0.32.3",
+    "tslib": "^2.6.0"
   },
   "engines": {
     "node": ">=16.14"
   },
   "devDependencies": {
-    "@types/file-loader": "^5.0.1",
-    "@types/sharp": "^0.30.5"
+    "@types/file-loader": "^5.0.1"
   }
 }

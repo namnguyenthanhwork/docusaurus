@@ -182,7 +182,7 @@ export default function getSwizzleConfig(): SwizzleConfig {
           eject: 'safe',
           wrap: 'safe',
         },
-        description: "The footer component of you site's layout",
+        description: "The footer component of your site's layout",
       },
       'Footer/Copyright': {
         actions: {
@@ -311,14 +311,6 @@ export default function getSwizzleConfig(): SwizzleConfig {
           wrap: 'safe',
         },
         description: 'The component used to render <details> tags in MDX',
-      },
-      'MDXComponents/Head': {
-        actions: {
-          eject: 'forbidden',
-          wrap: 'forbidden',
-        },
-        description:
-          'Technical component used to assign metadata (generally for SEO purpose) to the current MDX document',
       },
       'MDXComponents/Heading': {
         actions: {

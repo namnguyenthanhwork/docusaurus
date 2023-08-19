@@ -38,8 +38,8 @@ describe('themeConfig', () => {
       prism: {
         theme,
         darkTheme,
-        defaultLanguage: 'javascript',
-        additionalLanguages: ['kotlin', 'java'],
+        defaultLanguage: 'javaSCRIPT',
+        additionalLanguages: ['koTLin', 'jaVa'],
         magicComments: [
           {
             className: 'theme-code-block-highlighted-line',
@@ -126,6 +126,12 @@ describe('themeConfig', () => {
     expect(testValidateThemeConfig(userConfig)).toEqual({
       ...DEFAULT_CONFIG,
       ...userConfig,
+      prism: {
+        ...userConfig.prism,
+        // Modified/normalized values
+        defaultLanguage: 'javascript',
+        additionalLanguages: ['kotlin', 'java'],
+      },
     });
   });
 
@@ -470,10 +476,6 @@ describe('themeConfig', () => {
             href: 'https://opensource.facebook.com/legal/terms/',
           },
           {
-            label: 'Data Policy',
-            href: 'https://opensource.facebook.com/legal/data-policy/',
-          },
-          {
             label: 'Cookie Policy',
             href: 'https://opensource.facebook.com/legal/cookie-policy/',
           },
@@ -497,10 +499,6 @@ describe('themeConfig', () => {
         links: [
           {
             items: [
-              {
-                label: 'Data Policy',
-                href: 'https://opensource.facebook.com/legal/data-policy/',
-              },
               {
                 label: 'Cookie Policy',
                 href: 'https://opensource.facebook.com/legal/cookie-policy/',

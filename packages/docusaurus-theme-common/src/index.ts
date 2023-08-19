@@ -24,6 +24,8 @@ export {
   type ColorModeConfig,
 } from './utils/useThemeConfig';
 
+export {default as ThemedComponent} from './components/ThemedComponent';
+
 export {
   createStorageSlot,
   useStorageSlot,
@@ -43,8 +45,9 @@ export {useCollapsible, Collapsible} from './components/Collapsible';
 
 export {ThemeClassNames} from './utils/ThemeClassNames';
 
+export {prefersReducedMotion} from './utils/accessibilityUtils';
+
 export {
-  useIsomorphicLayoutEffect,
   useEvent,
   usePrevious,
   composeProviders,
@@ -73,6 +76,11 @@ export {
   type TagLetterEntry,
 } from './utils/tagsUtils';
 
+export {
+  useSearchQueryString,
+  useSearchLinkCreator,
+} from './hooks/useSearchPage';
+
 export {isMultiColumnFooterLinks} from './utils/footerUtils';
 
 export {isRegexpStringMatch} from './utils/regexpUtils';
@@ -96,4 +104,8 @@ export {
   UnlistedMetadata,
 } from './utils/unlistedUtils';
 
-export {ErrorBoundaryTryAgainButton} from './utils/errorBoundaryUtils';
+export {
+  ErrorBoundaryTryAgainButton,
+  ErrorBoundaryError,
+  ErrorCauseBoundary,
+} from './utils/errorBoundaryUtils';

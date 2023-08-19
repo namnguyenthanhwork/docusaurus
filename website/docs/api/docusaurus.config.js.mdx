@@ -6,44 +6,45 @@ slug: /api/docusaurus-config
 
 # `docusaurus.config.js`
 
+import APITable from '@site/src/components/APITable';
+
+:::info
+
+Refer to the Getting Started [**Configuration**](../configuration.mdx) for examples.
+
+:::
+
 ## Overview {#overview}
 
 `docusaurus.config.js` contains configurations for your site and is placed in the root directory of your site.
 
-It usually exports a site configuration object:
+This file is run in Node.js using the [**CommonJS**](https://flaviocopes.com/commonjs/) module system, and should export a site configuration object, or a function that creates it.
+
+Examples:
 
 ```js title="docusaurus.config.js"
 module.exports = {
-  // site config...
+  title: 'Docusaurus',
+  url: 'https://docusaurus.io',
+  // your site config ...
 };
 ```
 
-<details>
-<summary>Config files also support config creator functions and async code.</summary>
-
 ```js title="docusaurus.config.js"
-module.exports = function configCreator() {
+module.exports = async function createConfigAsync() {
   return {
-    // site config...
+    title: 'Docusaurus',
+    url: 'https://docusaurus.io',
+    // your site config ...
   };
 };
 ```
 
-```js title="docusaurus.config.js"
-module.exports = async function configCreatorAsync() {
-  return {
-    // site config...
-  };
-};
-```
+:::tip
 
-```js title="docusaurus.config.js"
-module.exports = Promise.resolve({
-  // site config...
-});
-```
+Refer to [**Syntax to declare `docusaurus.config.js`**](../configuration.mdx#syntax-to-declare-docusaurus-config) for a more exhaustive list of examples and explanations.
 
-</details>
+:::
 
 ## Required fields {#required-fields}
 
@@ -123,7 +124,7 @@ The i18n configuration object to [localize your site](../i18n/i18n-introduction.
 
 Example:
 
-<!-- cSpell:ignore فارسی -->
+{/* cSpell:ignore فارسی */}
 
 ```js title="docusaurus.config.js"
 module.exports = {
@@ -401,8 +402,24 @@ The global Docusaurus Markdown config.
 - Type: `MarkdownConfig`
 
 ```ts
+type MarkdownPreprocessor = (args: {
+  filePath: string;
+  fileContent: string;
+}) => string;
+
+type MDX1CompatOptions =
+  | boolean
+  | {
+      comments: boolean;
+      admonitions: boolean;
+      headingIds: boolean;
+    };
+
 type MarkdownConfig = {
+  format: 'mdx' | 'md' | 'detect';
   mermaid: boolean;
+  preprocessor?: MarkdownPreprocessor;
+  mdx1Compat: MDX1CompatOptions;
 };
 ```
 
@@ -411,12 +428,34 @@ Example:
 ```js title="docusaurus.config.js"
 module.exports = {
   markdown: {
+    format: 'mdx',
     mermaid: true,
+    preprocessor: ({filePath, fileContent}) => {
+      return fileContent.replaceAll('{{MY_VAR}}', 'MY_VALUE');
+    },
+    mdx1Compat: {
+      comments: true,
+      admonitions: true,
+      headingIds: true,
+    },
   },
 };
 ```
 
-- `mermaid`: when `true`, allows Docusaurus to render Markdown code blocks with `mermaid` language as Mermaid diagrams.
+```mdx-code-block
+<APITable>
+```
+
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| `format` | `'mdx' \| 'md' \| 'detect'` | `'mdx'` | The default parser format to use for Markdown content. Using 'detect' will select the appropriate format automatically based on file extensions: `.md` vs `.mdx`. |
+| `mermaid` | `boolean` | `false` | When `true`, allows Docusaurus to render Markdown code blocks with `mermaid` language as Mermaid diagrams. |
+| `preprocessor` | `MarkdownPreprocessor` | `undefined` | Gives you the ability to alter the Markdown content string before parsing. Use it as a last-resort escape hatch or workaround: it is almost always better to implement a Remark/Rehype plugin. |
+| `mdx1Compat` | `MDX1CompatOptions` | `{comments: true, admonitions: true, headingIds: true}` | Compatibility options to make it easier to upgrade to Docusaurus v3+. See the [MDX 2 PR for details](https://github.com/facebook/docusaurus/pull/8288). |
+
+```mdx-code-block
+</APITable>
+```
 
 ### `customFields` {#customFields}
 

@@ -616,6 +616,7 @@ Accepted fields:
 | `position` | <code>'left' \| 'right'</code> | `'left'` | The side of the navbar this item should appear on. |
 | `dropdownItemsBefore` | <code>[LinkLikeItem](#navbar-dropdown)[]</code> | `[]` | Add additional dropdown items at the beginning of the dropdown. |
 | `dropdownItemsAfter` | <code>[LinkLikeItem](#navbar-dropdown)[]</code> | `[]` | Add additional dropdown items at the end of the dropdown. |
+| `queryString` | `string` | `undefined` | The query string to be appended to the URL. |
 
 ```mdx-code-block
 </APITable>
@@ -766,7 +767,7 @@ Accepted fields:
 | --- | --- | --- | --- |
 | `theme` | `PrismTheme` | `palenight` | The Prism theme to use for light-theme code blocks. |
 | `darkTheme` | `PrismTheme` | `palenight` | The Prism theme to use for dark-theme code blocks. |
-| `defaultLanguage` | `string` | `undefined` | The side of the navbar this item should appear on. |
+| `defaultLanguage` | `string` | `undefined` | The default language to use for code blocks not declaring any explicit language. |
 | `magicComments` | `MagicCommentConfig[]` | _see below_ | The list of [magic comments](../../guides/markdown-features/markdown-features-code-blocks.mdx#custom-magic-comments). |
 
 ```mdx-code-block
@@ -793,7 +794,7 @@ const defaultMagicComments = [
 
 ### Theme {#theme}
 
-By default, we use [Palenight](https://github.com/FormidableLabs/prism-react-renderer/blob/master/src/themes/palenight.js) as syntax highlighting theme. You can specify a custom theme from the [list of available themes](https://github.com/FormidableLabs/prism-react-renderer/tree/master/src/themes). You may also use a different syntax highlighting theme when the site is in dark mode.
+By default, we use [Palenight](https://github.com/FormidableLabs/prism-react-renderer/blob/master/packages/prism-react-renderer/src/themes/palenight.ts) as syntax highlighting theme. You can specify a custom theme from the [list of available themes](https://github.com/FormidableLabs/prism-react-renderer/tree/master/packages/prism-react-renderer/src/themes). You may also use a different syntax highlighting theme when the site is in dark mode.
 
 Example configuration:
 
@@ -846,7 +847,7 @@ Accepted fields:
 | Name | Type | Default | Description |
 | --- | --- | --- | --- |
 | `logo` | `Logo` | `undefined` | Customization of the logo object. See [Navbar logo](#navbar-logo) for details. |
-| `copyright` | `string` | `undefined` | The copyright message to be displayed at the bottom. |
+| `copyright` | `string` | `undefined` | The copyright message to be displayed at the bottom, also supports custom HTML. |
 | `style` | <code>'dark' \| 'light'</code> | `'light'` | The color theme of the footer component. |
 | `links` | <code>(Column \| FooterLink)[]</code> | `[]` | The link groups to be present. |
 

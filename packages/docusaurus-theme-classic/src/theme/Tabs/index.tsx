@@ -5,11 +5,13 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, {cloneElement} from 'react';
+import React, {cloneElement, type ReactElement} from 'react';
 import clsx from 'clsx';
 import {
   useScrollPositionBlocker,
   useTabs,
+  sanitizeTabsChildren,
+  type TabItemProps,
 } from '@docusaurus/theme-common/internal';
 import useIsBrowser from '@docusaurus/useIsBrowser';
 import type {Props} from '@theme/Tabs';
@@ -109,8 +111,11 @@ function TabContent({
   children,
   selectedValue,
 }: Props & ReturnType<typeof useTabs>) {
+  const childTabs = (Array.isArray(children) ? children : [children]).filter(
+    Boolean,
+  ) as ReactElement<TabItemProps>[];
   if (lazy) {
-    const selectedTabItem = children.find(
+    const selectedTabItem = childTabs.find(
       (tabItem) => tabItem.props.value === selectedValue,
     );
     if (!selectedTabItem) {
@@ -121,7 +126,7 @@ function TabContent({
   }
   return (
     <div className="margin-top--md">
-      {children.map((tabItem, i) =>
+      {childTabs.map((tabItem, i) =>
         cloneElement(tabItem, {
           key: i,
           hidden: tabItem.props.value !== selectedValue,
@@ -148,7 +153,8 @@ export default function Tabs(props: Props): JSX.Element {
       // Remount tabs after hydration
       // Temporary fix for https://github.com/facebook/docusaurus/issues/5653
       key={String(isBrowser)}
-      {...props}
-    />
+      {...props}>
+      {sanitizeTabsChildren(props.children)}
+    </TabsComponent>
   );
 }

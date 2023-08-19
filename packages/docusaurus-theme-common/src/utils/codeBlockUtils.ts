@@ -19,6 +19,9 @@ const commentPatterns = {
   jsx: {start: '\\{\\s*\\/\\*', end: '\\*\\/\\s*\\}'},
   bash: {start: '#', end: ''},
   html: {start: '<!--', end: '-->'},
+  lua: {start: '--', end: ''},
+  wasm: {start: '\\;\\;', end: ''},
+  tex: {start: '%', end: ''},
 };
 
 type CommentType = keyof typeof commentPatterns;
@@ -83,10 +86,26 @@ function getAllMagicCommentDirectiveStyles(
       // Text uses HTML, front matter uses bash
       return getCommentPattern(['html', 'jsx', 'bash'], magicCommentDirectives);
 
+    case 'tex':
+    case 'latex':
+    case 'matlab':
+      return getCommentPattern(['tex'], magicCommentDirectives);
+
+    case 'lua':
+    case 'haskell':
+    case 'sql':
+      return getCommentPattern(['lua'], magicCommentDirectives);
+
+    case 'wasm':
+      return getCommentPattern(['wasm'], magicCommentDirectives);
+
     default:
-      // All comment types
+      // All comment types except lua, wasm and matlab
       return getCommentPattern(
-        Object.keys(commentPatterns) as CommentType[],
+        Object.keys(commentPatterns).filter(
+          (pattern) =>
+            !['lua', 'wasm', 'tex', 'latex', 'matlab'].includes(pattern),
+        ) as CommentType[],
         magicCommentDirectives,
       );
   }

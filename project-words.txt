@@ -18,6 +18,7 @@ autoconverted
 autogen
 autogenerating
 autohide
+autolinks
 backport
 backticks
 bartosz
@@ -25,6 +26,7 @@ beforeinstallprompt
 bhatt
 blocklist
 blockquotes
+Bokmål
 browserslist
 browserstack
 buble
@@ -47,6 +49,7 @@ codegen
 codeql
 codesandbox
 codespaces
+commonmark
 contravariance
 corejs
 crawlable
@@ -136,6 +139,7 @@ immer
 infima
 inlines
 intelli
+intellij
 interactiveness
 interpolatable
 investec
@@ -148,6 +152,7 @@ jodyheavener
 joshcena
 jscodeshift
 jssdk
+juillet
 kaszubowski
 katex
 kato
@@ -169,6 +174,7 @@ lqip
 lunrjs
 mapbox
 marcey
+markprompt
 marocchino
 massoud
 mathjax
@@ -178,17 +184,22 @@ mdast
 mdxa
 mdxast
 mdxhast
+mdxjs
 metadatum
 metastring
 metrica
 metrika
 microdata
+microlink
 middlewares
 minifier
 mkcert
 mkdir
 mkdirs
 mkdocs
+mkdn
+mdwn
+mkdown
 moesif
 msapplication
 nabors
@@ -237,6 +248,7 @@ philpl
 photoshop
 picocolors
 picomatch
+Pipeable
 playbtn
 pluggable
 plushie
@@ -283,6 +295,7 @@ redwoodjs
 refactorings
 regexes
 rehype
+renderable
 reponame
 reqs
 requireindex
@@ -335,6 +348,7 @@ subsubfolder
 subsubsection
 subsubsubfolder
 sucipto
+sunsetting
 supabase
 svgr
 swizzlable
@@ -387,6 +401,7 @@ wcag
 webfactory
 webp
 webpackbar
+webstorm
 wolcott
 writeups
 xclip
@@ -398,3 +413,7 @@ yangshunz
 zhou
 zoomable
 zpao
+hastscript
+Flightcontrol
+Fargate
+Flightcontrol's

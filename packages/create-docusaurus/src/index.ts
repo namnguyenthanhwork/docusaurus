@@ -197,7 +197,7 @@ function isValidGitRepoUrl(gitRepoUrl: string): boolean {
 }
 
 const gitStrategies = ['deep', 'shallow', 'copy', 'custom'] as const;
-type GitStrategy = typeof gitStrategies[number];
+type GitStrategy = (typeof gitStrategies)[number];
 
 async function getGitCommand(gitStrategy: GitStrategy): Promise<string> {
   switch (gitStrategy) {
@@ -241,7 +241,7 @@ async function getSiteName(
     return true;
   }
   if (reqName) {
-    const res = validateSiteName(reqName);
+    const res = await validateSiteName(reqName);
     if (typeof res === 'string') {
       throw new Error(res);
     }

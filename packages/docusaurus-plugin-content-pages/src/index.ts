@@ -31,6 +31,7 @@ import type {
   PluginOptions,
   Metadata,
   LoadedContent,
+  PageFrontMatter,
 } from '@docusaurus/plugin-content-pages';
 
 export function getContentPathList(contentPaths: PagesContentPaths): string[] {
@@ -186,7 +187,7 @@ export default function pluginContentPages(
       );
     },
 
-    configureWebpack(config, isServer, {getJSLoader}) {
+    configureWebpack() {
       const {
         admonitions,
         rehypePlugins,
@@ -209,7 +210,6 @@ export default function pluginContentPages(
                 // Trailing slash is important, see https://github.com/facebook/docusaurus/pull/3970
                 .map(addTrailingPathSeparator),
               use: [
-                getJSLoader({isServer}),
                 {
                   loader: require.resolve('@docusaurus/mdx-loader'),
                   options: {
@@ -235,6 +235,15 @@ export default function pluginContentPages(
                         `${docuHash(aliasedSource)}.json`,
                       );
                     },
+                    // Assets allow to convert some relative images paths to
+                    // require(...) calls
+                    createAssets: ({
+                      frontMatter,
+                    }: {
+                      frontMatter: PageFrontMatter;
+                    }) => ({
+                      image: frontMatter.image,
+                    }),
                     markdownConfig: siteConfig.markdown,
                   },
                 },

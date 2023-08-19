@@ -1,0 +1,26 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/*
+Hide some things in Argos screenshots because they are a source of flakiness
+ */
+iframe,
+article.yt-lite,
+.avatar__photo,
+img[src$='.gif'],
+h2#using-jsx-markup ~ div > div[class*='browserWindowBody']:has(b),
+[class*='playgroundPreview'] {
+  visibility: hidden;
+}
+
+/*
+Different docs last-update dates can alter layout
+"visibility: hidden" is not enough
+ */
+.theme-last-updated {
+  display: none;
+}

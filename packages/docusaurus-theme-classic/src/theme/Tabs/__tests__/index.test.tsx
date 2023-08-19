@@ -132,12 +132,9 @@ describe('Tabs', () => {
       renderer.create(
         <TestProviders>
           <Tabs
-            // @ts-expect-error: for an edge-case that we didn't write types for
             values={tabs.map((t, idx) => ({label: t, value: idx}))}
-            // @ts-expect-error: for an edge-case that we didn't write types for
             defaultValue={0}>
             {tabs.map((t, idx) => (
-              // @ts-expect-error: for an edge-case that we didn't write types for
               <TabItem key={idx} value={idx}>
                 {t}
               </TabItem>
@@ -182,6 +179,33 @@ describe('Tabs', () => {
           <Tabs queryString="qsKey">
             <TabItem value="val1">Val1</TabItem>
             <TabItem value="val2">Val2</TabItem>
+          </Tabs>
+        </TestProviders>,
+      );
+    }).not.toThrow();
+  });
+
+  it('accepts a single TabItem', () => {
+    expect(() => {
+      renderer.create(
+        <TestProviders>
+          <Tabs>
+            <TabItem value="val1">Val1</TabItem>
+          </Tabs>
+        </TestProviders>,
+      );
+    }).not.toThrow();
+  });
+
+  it('allows a tab to be falsy', () => {
+    expect(() => {
+      renderer.create(
+        <TestProviders>
+          <Tabs>
+            <TabItem value="val1">Val1</TabItem>
+            {null}
+            {false}
+            {undefined}
           </Tabs>
         </TestProviders>,
       );

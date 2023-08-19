@@ -200,6 +200,7 @@ const LocaleDropdownNavbarItemSchema = NavbarItemBaseSchema.append({
   type: Joi.string().equal('localeDropdown').required(),
   dropdownItemsBefore: Joi.array().items(DropdownSubitemSchema).default([]),
   dropdownItemsAfter: Joi.array().items(DropdownSubitemSchema).default([]),
+  queryString: Joi.string(),
 });
 
 const SearchItemSchema = Joi.object({
@@ -312,6 +313,10 @@ const LogoSchema = Joi.object({
   className: Joi.string(),
 });
 
+// Normalize prism language to lowercase
+// See https://github.com/facebook/docusaurus/issues/9012
+const PrismLanguage = Joi.string().custom((val) => val.toLowerCase());
+
 export const ThemeConfigSchema = Joi.object<ThemeConfig>({
   // TODO temporary (@alpha-58)
   // @ts-expect-error: forbidden
@@ -384,9 +389,9 @@ export const ThemeConfigSchema = Joi.object<ThemeConfig>({
       plain: Joi.alternatives().try(Joi.array(), Joi.object()).required(),
       styles: Joi.alternatives().try(Joi.array(), Joi.object()).required(),
     }),
-    defaultLanguage: Joi.string(),
+    defaultLanguage: PrismLanguage,
     additionalLanguages: Joi.array()
-      .items(Joi.string())
+      .items(PrismLanguage)
       .default(DEFAULT_CONFIG.prism.additionalLanguages),
     magicComments: Joi.array()
       .items(
