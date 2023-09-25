@@ -60,7 +60,8 @@
     "watch": "yarn lerna run --parallel watch",
     "clear": "(yarn workspace website clear || echo 'Failure while running docusaurus clear') && yarn rimraf test-website && yarn rimraf test-website-in-workspace && yarn lerna exec --ignore docusaurus yarn rimraf lib",
     "test:baseUrl": "yarn build:website:baseUrl && yarn serve:website:baseUrl",
-    "lock:update": "npx --yes yarn-deduplicate"
+    "lock:update": "npx --yes yarn-deduplicate",
+    "update-translations": "yarn workspace @docusaurus/theme-translations update"
   },
   "dependencies": {
     "unified": "^10.1.2"
@@ -72,7 +73,7 @@
     "@testing-library/react-hooks": "^8.0.1",
     "@types/fs-extra": "^9.0.13",
     "@types/jest": "^29.5.3",
-    "@types/lodash": "^4.14.195",
+    "@types/lodash": "^4.14.197",
     "@types/node": "^18.16.19",
     "@types/prompts": "^2.4.4",
     "@types/react": "^18.2.15",
@@ -116,6 +117,6 @@
     "stylelint": "^14.16.1",
     "stylelint-config-prettier": "^9.0.5",
     "stylelint-config-standard": "^29.0.0",
-    "typescript": "~5.0.4"
+    "typescript": "~5.2.2"
   }
 }
