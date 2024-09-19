@@ -7,17 +7,17 @@
 
 import fs from 'fs-extra';
 import path from 'path';
-import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import {md5Hash, getFileLoaderUtils} from '@docusaurus/utils';
-import {
-  getCustomizableJSLoader,
-  getStyleLoaders,
-  getCustomBabelConfigFilePath,
-  getMinimizer,
-} from './utils';
+import {createJsLoaderFactory, getCustomBabelConfigFilePath} from './utils';
+import {getMinimizers} from './minification';
 import {loadThemeAliases, loadDocusaurusAliases} from './aliases';
+import {getCSSExtractPlugin} from './currentBundler';
 import type {Configuration} from 'webpack';
-import type {Props} from '@docusaurus/types';
+import type {
+  ConfigureWebpackUtils,
+  FasterConfig,
+  Props,
+} from '@docusaurus/types';
 
 const CSS_REGEX = /\.css$/i;
 const CSS_MODULE_REGEX = /\.module\.css$/i;
@@ -30,6 +30,15 @@ const LibrariesToTranspile = [
 const LibrariesToTranspileRegex = new RegExp(
   LibrariesToTranspile.map((libName) => `(node_modules/${libName})`).join('|'),
 );
+
+const ReactAliases: Record<string, string> = process.env
+  .DOCUSAURUS_NO_REACT_ALIASES
+  ? {}
+  : {
+      react: path.dirname(require.resolve('react/package.json')),
+      'react-dom': path.dirname(require.resolve('react-dom/package.json')),
+      '@mdx-js/react': path.dirname(require.resolve('@mdx-js/react')),
+    };
 
 export function excludeJS(modulePath: string): boolean {
   // Always transpile client dir
@@ -44,11 +53,19 @@ export function excludeJS(modulePath: string): boolean {
   );
 }
 
-export async function createBaseConfig(
-  props: Props,
-  isServer: boolean,
-  minify: boolean = true,
-): Promise<Configuration> {
+export async function createBaseConfig({
+  props,
+  isServer,
+  minify,
+  faster,
+  configureWebpackUtils,
+}: {
+  props: Props;
+  isServer: boolean;
+  minify: boolean;
+  faster: FasterConfig;
+  configureWebpackUtils: ConfigureWebpackUtils;
+}): Promise<Configuration> {
   const {
     outDir,
     siteDir,
@@ -62,15 +79,20 @@ export async function createBaseConfig(
   } = props;
   const totalPages = routesPaths.length;
   const isProd = process.env.NODE_ENV === 'production';
-  const minimizeEnabled = minify && isProd && !isServer;
-  const useSimpleCssMinifier = process.env.USE_SIMPLE_CSS_MINIFIER === 'true';
+  const minimizeEnabled = minify && isProd;
 
-  const fileLoaderUtils = getFileLoaderUtils();
+  const fileLoaderUtils = getFileLoaderUtils(isServer);
 
   const name = isServer ? 'server' : 'client';
   const mode = isProd ? 'production' : 'development';
 
   const themeAliases = await loadThemeAliases({siteDir, plugins});
+
+  const createJsLoader = await createJsLoaderFactory({siteConfig});
+
+  const CSSExtractPlugin = await getCSSExtractPlugin({
+    currentBundler: configureWebpackUtils.currentBundler,
+  });
 
   return {
     mode,
@@ -109,7 +131,8 @@ export async function createBaseConfig(
       chunkFilename: isProd
         ? 'assets/js/[name].[contenthash:8].js'
         : '[name].js',
-      publicPath: baseUrl,
+      publicPath:
+        siteConfig.future.experimental_router === 'hash' ? 'auto' : baseUrl,
       hashFunction: 'xxhash64',
     },
     // Don't throw warning when asset created is over 250kb
@@ -132,6 +155,7 @@ export async function createBaseConfig(
         process.cwd(),
       ],
       alias: {
+        ...ReactAliases,
         '@site': siteDir,
         '@generated': generatedFilesDir,
         ...(await loadDocusaurusAliases()),
@@ -156,9 +180,7 @@ export async function createBaseConfig(
       // Only minimize client bundle in production because server bundle is only
       // used for static site generation
       minimize: minimizeEnabled,
-      minimizer: minimizeEnabled
-        ? getMinimizer(useSimpleCssMinifier)
-        : undefined,
+      minimizer: minimizeEnabled ? await getMinimizers({faster}) : undefined,
       splitChunks: isServer
         ? false
         : {
@@ -199,7 +221,7 @@ export async function createBaseConfig(
           test: /\.[jt]sx?$/i,
           exclude: excludeJS,
           use: [
-            getCustomizableJSLoader(siteConfig.webpack?.jsLoader)({
+            createJsLoader({
               isServer,
               babelOptions: await getCustomBabelConfigFilePath(siteDir),
             }),
@@ -208,7 +230,7 @@ export async function createBaseConfig(
         {
           test: CSS_REGEX,
           exclude: CSS_MODULE_REGEX,
-          use: getStyleLoaders(isServer, {
+          use: configureWebpackUtils.getStyleLoaders(isServer, {
             importLoaders: 1,
             sourceMap: !isProd,
           }),
@@ -217,11 +239,11 @@ export async function createBaseConfig(
         // using the extension .module.css
         {
           test: CSS_MODULE_REGEX,
-          use: getStyleLoaders(isServer, {
+          use: configureWebpackUtils.getStyleLoaders(isServer, {
             modules: {
-              localIdentName: isProd
-                ? `[local]_[contenthash:base64:4]`
-                : `[local]_[path][name]`,
+              // Using the same CSS Module class pattern in dev/prod on purpose
+              // See https://github.com/facebook/docusaurus/pull/10423
+              localIdentName: `[local]_[contenthash:base64:4]`,
               exportOnlyLocals: isServer,
             },
             importLoaders: 1,
@@ -231,7 +253,7 @@ export async function createBaseConfig(
       ],
     },
     plugins: [
-      new MiniCssExtractPlugin({
+      new CSSExtractPlugin({
         filename: isProd
           ? 'assets/css/[name].[contenthash:8].css'
           : '[name].css',

@@ -68,7 +68,7 @@ yarn serve
 
 This local test step is optional because it will be run by the CI on your release PR ([see](https://github.com/facebook/docusaurus/pull/2954/checks?check_run_id=780871959))
 
-### 3. Update the v2 changelog
+### 3. Update the changelog
 
 The changelog uses GitHub labels to classify each pull request. Use the GitHub interface to assign each newly merged pull request to a GitHub label starting with `pr:`, otherwise the PR won't appear in the changelog.
 
@@ -187,7 +187,7 @@ If all accesses are available, build all the necessary packages, and then run th
 
 ```sh
 yarn build:packages
-yarn lerna publish --exact 2.0.0-beta.0
+yarn lerna publish  --force-publish --exact 2.0.0-beta.0
 ```
 
 This command does a few things:
@@ -218,7 +218,7 @@ Create a separate branch/PR and run `yarn examples:generate`
 
 ### 9. Notify people about new release (optional but desirable)
 
-After new release, it is cool to notify our users about this in the Discord chat (`#announcements` channel) and write summaries on Twitter using the following templates.
+After new release, it is cool to notify our users about this in the Discord chat (`#announcements` channel) and write summaries on X using the following templates.
 
 For Discord:
 
@@ -227,7 +227,7 @@ A new version %VER% is available now! 🎉
 See release notes at the following link https://github.com/facebook/docusaurus/releases/tag/%VER%
 ```
 
-For Twitter:
+For X:
 
 ```
 💥 A new version %VER% is available now! 💥

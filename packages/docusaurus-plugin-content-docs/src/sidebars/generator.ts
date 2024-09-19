@@ -8,7 +8,7 @@
 import path from 'path';
 import _ from 'lodash';
 import logger from '@docusaurus/logger';
-import {addTrailingSlash} from '@docusaurus/utils';
+import {addTrailingSlash} from '@docusaurus/utils-common';
 import {createDocsByIdIndex, toCategoryIndexMatcherParam} from '../docs';
 import type {
   SidebarItemDoc,
@@ -249,6 +249,9 @@ Available doc IDs:
         ...(customProps !== undefined && {customProps}),
         ...(className !== undefined && {className}),
         items,
+        ...(categoryMetadata?.description && {
+          description: categoryMetadata?.description,
+        }),
         ...(link && {link}),
       };
     }

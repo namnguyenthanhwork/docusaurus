@@ -14,12 +14,12 @@ import {
   Collapsible,
   useCollapsible,
 } from '@docusaurus/theme-common';
+import {isSamePath} from '@docusaurus/theme-common/internal';
 import {
   isActiveSidebarItem,
   findFirstSidebarItemLink,
   useDocSidebarItemsExpandedState,
-  isSamePath,
-} from '@docusaurus/theme-common/internal';
+} from '@docusaurus/plugin-content-docs/client';
 import Link from '@docusaurus/Link';
 import {translate} from '@docusaurus/Translate';
 import useIsBrowser from '@docusaurus/useIsBrowser';
@@ -101,6 +101,7 @@ function CollapseButton({
               {label: categoryLabel},
             )
       }
+      aria-expanded={!collapsed}
       type="button"
       className="clean-btn menu__caret"
       onClick={onClick}
@@ -193,7 +194,8 @@ export default function DocSidebarItemCategory({
                 }
           }
           aria-current={isCurrentPage ? 'page' : undefined}
-          aria-expanded={collapsible ? !collapsed : undefined}
+          role={collapsible && !href ? 'button' : undefined}
+          aria-expanded={collapsible && !href ? !collapsed : undefined}
           href={collapsible ? hrefWithSSRFallback ?? '#' : hrefWithSSRFallback}
           {...props}>
           {label}

@@ -12,17 +12,21 @@ import _ from 'lodash';
 import {isMatch} from 'picomatch';
 import commander from 'commander';
 import webpack from 'webpack';
-import {loadContext} from '@docusaurus/core/src/server/index';
-import {applyConfigureWebpack} from '@docusaurus/core/src/webpack/utils';
-import {sortConfig} from '@docusaurus/core/src/server/plugins/routeConfig';
+import {loadContext} from '@docusaurus/core/src/server/site';
+import {
+  applyConfigureWebpack,
+  createConfigureWebpackUtils,
+} from '@docusaurus/core/src/webpack/configure';
+import {sortRoutes} from '@docusaurus/core/src/server/plugins/routeConfig';
 import {posixPath} from '@docusaurus/utils';
 import {normalizePluginOptions} from '@docusaurus/utils-validation';
 
+import {fromPartial} from '@total-typescript/shoehorn';
 import pluginContentDocs from '../index';
 import {toSidebarsProp} from '../props';
 import {DefaultSidebarItemsGenerator} from '../sidebars/generator';
 import {DisabledSidebars} from '../sidebars';
-import * as cliDocs from '../cli';
+import cliDocs from '../cli';
 import {validateOptions} from '../options';
 
 import type {RouteConfig, Validate, Plugin} from '@docusaurus/types';
@@ -31,7 +35,6 @@ import type {
   Options,
   PluginOptions,
   PropSidebarItemLink,
-  PropSidebars,
 } from '@docusaurus/plugin-content-docs';
 import type {
   SidebarItemsGeneratorOption,
@@ -59,7 +62,7 @@ Available ids are:\n- ${version.docs.map((d) => d.id).join('\n- ')}`,
 }
 
 const createFakeActions = (contentDir: string) => {
-  const routeConfigs: RouteConfig[] = [];
+  let routeConfigs: RouteConfig[] = [];
   const dataContainer: {[key: string]: unknown} = {};
   const globalDataContainer: {pluginName?: {pluginId: unknown}} = {};
 
@@ -76,40 +79,15 @@ const createFakeActions = (contentDir: string) => {
     },
   };
 
-  // Query by prefix, because files have a hash at the end so it's not
-  // convenient to query by full filename
-  function getCreatedDataByPrefix(prefix: string) {
-    const entry = Object.entries(dataContainer).find(([key]) =>
-      key.startsWith(prefix),
-    );
-    if (!entry) {
-      throw new Error(`No created entry found for prefix "${prefix}".
-Entries created:
-- ${Object.keys(dataContainer).join('\n- ')}
-        `);
-    }
-    return JSON.parse(entry[1] as string) as PropSidebars;
-  }
-
   // Extra fns useful for tests!
   const utils = {
     getGlobalData: () => globalDataContainer,
     getRouteConfigs: () => routeConfigs,
 
-    checkVersionMetadataPropCreated: (version: LoadedVersion | undefined) => {
-      if (!version) {
-        throw new Error('Version not found');
-      }
-      const versionMetadataProp = getCreatedDataByPrefix(
-        `version-${_.kebabCase(version.versionName)}-metadata-prop`,
-      );
-      expect(versionMetadataProp.docsSidebars).toEqual(toSidebarsProp(version));
-    },
-
     expectSnapshot: () => {
       // Sort the route config like in src/server/plugins/index.ts for
       // consistent snapshot ordering
-      sortConfig(routeConfigs);
+      routeConfigs = sortRoutes(routeConfigs, '/');
       expect(routeConfigs).not.toEqual([]);
       expect(routeConfigs).toMatchSnapshot('route config');
       expect(dataContainer).toMatchSnapshot('data');
@@ -299,19 +277,26 @@ describe('simple website', () => {
 
     const content = await plugin.loadContent?.();
 
-    const config = applyConfigureWebpack(
-      plugin.configureWebpack as NonNullable<Plugin['configureWebpack']>,
-      {
+    const config = applyConfigureWebpack({
+      configureWebpack: plugin.configureWebpack as NonNullable<
+        Plugin['configureWebpack']
+      >,
+      config: {
         entry: './src/index.js',
         output: {
           filename: 'main.js',
           path: path.resolve(__dirname, 'dist'),
         },
       },
-      false,
-      undefined,
+      isServer: false,
+      configureWebpackUtils: await createConfigureWebpackUtils({
+        siteConfig: {
+          webpack: {jsLoader: 'babel'},
+          future: {experimental_faster: fromPartial({})},
+        },
+      }),
       content,
-    );
+    });
     const errors = webpack.validate(config);
     expect(errors).toBeUndefined();
   });
@@ -335,10 +320,7 @@ describe('simple website', () => {
     await plugin.contentLoaded!({
       content,
       actions,
-      allContent: {},
     });
-
-    utils.checkVersionMetadataPropCreated(currentVersion);
 
     utils.expectSnapshot();
 
@@ -464,13 +446,7 @@ describe('versioned website', () => {
     await plugin.contentLoaded!({
       content,
       actions,
-      allContent: {},
     });
-
-    utils.checkVersionMetadataPropCreated(currentVersion);
-    utils.checkVersionMetadataPropCreated(version101);
-    utils.checkVersionMetadataPropCreated(version100);
-    utils.checkVersionMetadataPropCreated(versionWithSlugs);
 
     utils.expectSnapshot();
   });
@@ -569,11 +545,7 @@ describe('versioned website (community)', () => {
     await plugin.contentLoaded!({
       content,
       actions,
-      allContent: {},
     });
-
-    utils.checkVersionMetadataPropCreated(currentVersion);
-    utils.checkVersionMetadataPropCreated(version100);
 
     utils.expectSnapshot();
   });

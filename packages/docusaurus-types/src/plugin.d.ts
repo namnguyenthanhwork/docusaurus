@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import type {TranslationFile} from './i18n';
+import type {CodeTranslations, TranslationFile} from './i18n';
 import type {RuleSetRule, Configuration as WebpackConfiguration} from 'webpack';
 import type {CustomizeRuleString} from 'webpack-merge/dist/types';
 import type {CommanderStatic} from 'commander';
@@ -15,22 +15,21 @@ import type {ThemeConfig} from './config';
 import type {LoadContext, Props} from './context';
 import type {SwizzleConfig} from './swizzle';
 import type {RouteConfig} from './routing';
+import type {CurrentBundler} from './bundler';
 
 export type PluginOptions = {id?: string} & {[key: string]: unknown};
 
-export type PluginConfig =
+export type PluginConfig<Content = unknown> =
   | string
   | [string, PluginOptions]
-  | [PluginModule, PluginOptions]
-  | PluginModule
+  | [PluginModule<Content>, PluginOptions]
+  | PluginModule<Content>
   | false
   | null;
 
-export type PresetConfig =
-  | string
-  | [string, {[key: string]: unknown}]
-  | false
-  | null;
+export type PresetConfigDefined = string | [string, {[key: string]: unknown}];
+
+export type PresetConfig = PresetConfigDefined | false | null;
 
 /**
  * - `type: 'package'`, plugin is in a different package.
@@ -51,18 +50,21 @@ export type PluginVersionInformation =
 
 export type PluginContentLoadedActions = {
   addRoute: (config: RouteConfig) => void;
-  createData: (name: string, data: string) => Promise<string>;
+  createData: (name: string, data: string | object) => Promise<string>;
   setGlobalData: (data: unknown) => void;
 };
 
 export type ConfigureWebpackUtils = {
+  currentBundler: CurrentBundler;
   getStyleLoaders: (
     isServer: boolean,
     cssOptions: {[key: string]: unknown},
   ) => RuleSetRule[];
   getJSLoader: (options: {
     isServer: boolean;
-    babelOptions?: {[key: string]: unknown};
+    // TODO Docusaurus v4 remove?
+    //  not ideal because JS Loader might not use Babel...
+    babelOptions?: string | {[key: string]: unknown};
   }) => RuleSetRule;
 };
 
@@ -112,7 +114,9 @@ export type Plugin<Content = unknown> = {
   contentLoaded?: (args: {
     /** The content loaded by this plugin instance */
     content: Content; //
-    /** Content loaded by ALL the plugins */
+    actions: PluginContentLoadedActions;
+  }) => Promise<void> | void;
+  allContentLoaded?: (args: {
     allContent: AllContent;
     actions: PluginContentLoadedActions;
   }) => Promise<void> | void;
@@ -122,12 +126,13 @@ export type Plugin<Content = unknown> = {
       head: {[location: string]: HelmetServerState};
     },
   ) => Promise<void> | void;
-  // TODO refactor the configureWebpack API surface: use an object instead of
-  // multiple params (requires breaking change)
+  // TODO Docusaurus v4 ?
+  //  refactor the configureWebpack API surface: use an object instead of
+  //  multiple params (requires breaking change)
   configureWebpack?: (
     config: WebpackConfiguration,
     isServer: boolean,
-    utils: ConfigureWebpackUtils,
+    configureWebpackUtils: ConfigureWebpackUtils,
     content: Content,
   ) => WebpackConfiguration & {
     mergeStrategy?: {
@@ -165,6 +170,15 @@ export type Plugin<Content = unknown> = {
   }) => ThemeConfig;
 };
 
+/**
+ * Data required to uniquely identify a plugin
+ * The name or instance id alone is not enough
+ */
+export type PluginIdentifier = {
+  readonly name: string;
+  readonly id: string;
+};
+
 export type InitializedPlugin = Plugin & {
   readonly options: Required<PluginOptions>;
   readonly version: PluginVersionInformation;
@@ -174,10 +188,17 @@ export type InitializedPlugin = Plugin & {
 
 export type LoadedPlugin = InitializedPlugin & {
   readonly content: unknown;
+  readonly globalData: unknown;
+  readonly routes: RouteConfig[];
+  readonly defaultCodeTranslations: CodeTranslations;
 };
 
-export type PluginModule = {
-  (context: LoadContext, options: unknown): Plugin | Promise<Plugin>;
+export type PluginModule<Content = unknown> = {
+  (context: LoadContext, options: unknown):
+    | Plugin<Content>
+    | null
+    | Promise<Plugin<Content> | null>;
+
   validateOptions?: <T, U>(data: OptionValidationContext<T, U>) => U;
   validateThemeConfig?: <T>(data: ThemeConfigValidationContext<T>) => T;
 

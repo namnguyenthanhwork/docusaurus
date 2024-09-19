@@ -25,7 +25,7 @@ There are a few options you can use to add search to your website:
 
 Docusaurus has **official support** for [Algolia DocSearch](https://docsearch.algolia.com).
 
-The service is **free** for any open-source project: just make sure to read the [checklist](https://docsearch.algolia.com/docs/who-can-apply/) and [apply to the DocSearch program](https://docsearch.algolia.com/apply).
+The service is **free** for any developer documentation or technical blog: just make sure to read the [checklist](https://docsearch.algolia.com/docs/who-can-apply/) and [apply to the DocSearch program](https://docsearch.algolia.com/apply).
 
 DocSearch crawls your website once a week (the schedule is configurable from the web interface) and aggregates all the content in an Algolia index. This content is then queried directly from your front-end using the Algolia API.
 
@@ -47,9 +47,17 @@ You can read more about migration from the legacy DocSearch infra in [our blog p
 
 After your application has been approved and deployed, you will receive an email with all the details for you to add DocSearch to your project. Editing and managing your crawls can be done via [the web interface](https://crawler.algolia.com/). Indices are readily available after deployment, so manual configuration usually isn't necessary.
 
-:::tip
+:::danger Use the recommended crawler config
 
-It is highly recommended to use a config similar to the [**Docusaurus 2 website config**](https://docsearch.algolia.com/docs/templates/#docusaurus-v2-template).
+It is highly recommended to use our official [**Docusaurus v3 crawler configuration**](https://docsearch.algolia.com/docs/templates/#docusaurus-v3-template). We cannot support you if you choose a different crawler configuration.
+
+:::
+
+:::warning When updating your crawler config
+
+The crawler configuration contains a `initialIndexSettings`, which will only be used to initialize your Algolia index if it does not exist yet.
+
+If you update your `initialIndexSettings` crawler setting, it is possible to update the index manually through the interface, but [the Algolia team recommends to delete your index and then restart a crawl](https://github.com/facebook/docusaurus/issues/9200#issuecomment-1667338492) to fully reinitialize it with the new settings.
 
 :::
 
@@ -69,7 +77,7 @@ npm install --save @docusaurus/theme-search-algolia
 2. Register the theme in `docusaurus.config.js`:
 
 ```js title="docusaurus.config.js"
-module.exports = {
+export default {
   title: 'My site',
   // ...
   themes: ['@docusaurus/theme-search-algolia'],
@@ -84,7 +92,7 @@ module.exports = {
 Then, add an `algolia` field in your `themeConfig`. **[Apply for DocSearch](https://docsearch.algolia.com/apply/)** to get your Algolia index and API key.
 
 ```js title="docusaurus.config.js"
-module.exports = {
+export default {
   // ...
   themeConfig: {
     // ...
@@ -116,6 +124,9 @@ module.exports = {
       // Optional: path for search page that enabled by default (`false` to disable it)
       searchPagePath: 'search',
 
+      // Optional: whether the insights feature is enabled or not on Docsearch (`false` by default)
+      insights: false,
+
       //... other Algolia params
     },
     // highlight-end
@@ -146,7 +157,7 @@ Contextual search is **enabled by default**.
 It ensures that search results are **relevant to the current language and version**.
 
 ```js title="docusaurus.config.js"
-module.exports = {
+export default {
   // ...
   themeConfig: {
     // ...
@@ -177,7 +188,7 @@ When using `contextualSearch: true` (default), the contextual facet filters will
 For specific needs, you can disable `contextualSearch` and define your own `facetFilters`:
 
 ```js title="docusaurus.config.js"
-module.exports = {
+export default {
   // ...
   themeConfig: {
     // ...
@@ -194,6 +205,12 @@ module.exports = {
 ```
 
 Refer to the relevant [Algolia faceting documentation](https://www.algolia.com/doc/guides/managing-results/refine-results/faceting/).
+
+:::
+
+:::warning Contextual search doesn't work?
+
+If you only get search results when Contextual Search is disabled, this is very likely because of an [index configuration issue](#algolia-no-search-results).
 
 :::
 
@@ -247,12 +264,10 @@ Still, you can reuse the [Infima CSS variables](styling-layout.mdx#styling-your-
 
 ### Customizing the Algolia search behavior {#customizing-the-algolia-search-behavior}
 
-{/* TODO: update options link once the documentation is available on the DocSearch website */}
-
-Algolia DocSearch supports a [list of options](https://autocomplete-experimental.netlify.app/docs/DocSearchModal#reference) that you can pass to the `algolia` field in the `docusaurus.config.js` file.
+Algolia DocSearch supports a [list of options](https://docsearch.algolia.com/docs/api/) that you can pass to the `algolia` field in the `docusaurus.config.js` file.
 
 ```js title="docusaurus.config.js"
-module.exports = {
+export default {
   themeConfig: {
     // ...
     algolia: {
@@ -272,11 +287,58 @@ If you prefer to edit the Algolia search React component, [swizzle](swizzling.md
 npm run swizzle @docusaurus/theme-search-algolia SearchBar
 ```
 
+### Troubleshooting {#algolia-troubleshooting}
+
+Here are the most common issues Docusaurus users face when using Algolia DocSearch.
+
+#### No Search Results {#algolia-no-search-results}
+
+Seeing no search results is usually related to an **index configuration problem**.
+
+<details>
+  <summary>How to check if I have a config problem?</summary>
+
+Docusaurus uses [Algolia faceting](https://www.algolia.com/doc/guides/managing-results/refine-results/faceting/) for its [Contextual Search](#contextual-search) feature, to create dynamic queries such as:
+
+```json
+[
+  "language:en",
+  [
+    "docusaurus_tag:default",
+    "docusaurus_tag:docs-default-3.2.1",
+    "docusaurus_tag:docs-community-current",
+    "docusaurus_tag:docs-docs-tests-current"
+  ]
+]
+```
+
+On the Algolia UI, your index should allow to create facet queries on fields `docusaurus_tag`, `language`, `lang`, `version`, `type`, as shown in the screenshot below:
+
+![Algolia index showing appropriate faceting fields](/img/docsearch-troubleshoot-index-facets.jpg)
+
+Alternatively, if you disable [Contextual Search](#contextual-search) with `{contextualSearch: false}` (which we don't particularly recommend), Docusaurus will not use facet queries, and you should start seeing results.
+
+</details>
+
+:::danger Use the recommended configuration
+
+We [recommend a specific crawler configuration](#algolia-index-configuration) for a good reason. We cannot support you if you choose to use a different configuration.
+
+:::
+
+You can fix index configuration problems by following those steps:
+
+1. Use the [recommend crawler configuration](#algolia-index-configuration)
+2. Delete your index through the UI
+3. Trigger a new crawl through the UI
+4. Check your index is recreated with the appropriate faceting fields: `docusaurus_tag`, `language`, `lang`, `version`, `type`
+5. See that you now get search results, even with [Contextual Search](#contextual-search) enabled
+
 ### Support {#algolia-support}
 
 The Algolia DocSearch team can help you figure out search problems on your site.
 
-You can contact them by [email](mailto:documentationsearch@algolia.com) or on [Discord](https://discord.gg/tXdr5mP).
+You can reach out to Algolia via [their support page](https://algolia.com/support) or on [Discord](https://discord.gg/wr2m5j948P).
 
 Docusaurus also has an `#algolia` channel on [Discord](https://discordapp.com/invite/docusaurus).
 
@@ -286,7 +348,7 @@ Docusaurus also has an `#algolia` channel on [Discord](https://discordapp.com/in
 
 Typesense is an [open source](https://github.com/typesense/typesense) instant-search engine that you can either:
 
-- [Self-Host](https://typesense.org/docs/latest/guide/install-typesense.html#option-2-local-machine-self-hosting) on your own servers or
+- [Self-Host](https://typesense.org/docs/guide/install-typesense.html#option-2-local-machine-self-hosting) on your own servers or
 - Use the Managed [Typesense Cloud](https://cloud.typesense.org) service.
 
 Similar to Algolia DocSearch, there are two components:
@@ -294,7 +356,7 @@ Similar to Algolia DocSearch, there are two components:
 - [typesense-docsearch-scraper](https://github.com/typesense/typesense-docsearch-scraper) - which scrapes your website and indexes the data in your Typesense cluster.
 - [docusaurus-theme-search-typesense](https://github.com/typesense/docusaurus-theme-search-typesense) - a search bar UI component to add to your website.
 
-Read a step-by-step walk-through of how to [run typesense-docsearch-scraper here](https://typesense.org/docs/latest/guide/docsearch.html#step-1-set-up-docsearch-scraper) and how to [install the Search Bar in your Docusaurus Site here](https://typesense.org/docs/latest/guide/docsearch.html#option-a-docusaurus-powered-sites).
+Read a step-by-step walk-through of how to [run typesense-docsearch-scraper here](https://typesense.org/docs/guide/docsearch.html#step-1-set-up-docsearch-scraper) and how to [install the Search Bar in your Docusaurus Site here](https://typesense.org/docs/guide/docsearch.html#option-a-docusaurus-powered-sites).
 
 ## 👥 Using Local Search {#using-local-search}
 
@@ -310,6 +372,6 @@ To use your own search, swizzle the `SearchBar` component in `@docusaurus/theme-
 npm run swizzle @docusaurus/theme-classic SearchBar
 ```
 
-This will create an `src/themes/SearchBar` file in your project folder. Restart your dev server and edit the component, you will see that Docusaurus uses your own `SearchBar` component now.
+This will create an `src/theme/SearchBar` file in your project folder. Restart your dev server and edit the component, you will see that Docusaurus uses your own `SearchBar` component now.
 
 **Notes**: You can alternatively [swizzle from Algolia SearchBar](#editing-the-algolia-search-component) and create your own search component from there.

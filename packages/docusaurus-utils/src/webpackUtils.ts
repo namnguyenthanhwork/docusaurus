@@ -11,7 +11,25 @@ import {
   WEBPACK_URL_LOADER_LIMIT,
   OUTPUT_STATIC_ASSETS_DIR_NAME,
 } from './constants';
-import type {RuleSetRule} from 'webpack';
+import type {RuleSetRule, LoaderContext} from 'webpack';
+
+export type WebpackCompilerName = 'server' | 'client';
+
+export function getWebpackLoaderCompilerName(
+  context: LoaderContext<unknown>,
+): WebpackCompilerName {
+  // eslint-disable-next-line no-underscore-dangle
+  const compilerName = context._compiler?.name;
+  switch (compilerName) {
+    case 'server':
+    case 'client':
+      return compilerName;
+    default:
+      throw new Error(
+        `Cannot get valid Docusaurus webpack compiler name. Found compilerName=${compilerName}`,
+      );
+  }
+}
 
 type AssetFolder = 'images' | 'files' | 'fonts' | 'medias';
 
@@ -20,6 +38,7 @@ type FileLoaderUtils = {
     file: (options: {folder: AssetFolder}) => RuleSetRule;
     url: (options: {folder: AssetFolder}) => RuleSetRule;
     inlineMarkdownImageFileLoader: string;
+    inlineMarkdownAssetImageFileLoader: string;
     inlineMarkdownLinkFileLoader: string;
   };
   rules: {
@@ -31,12 +50,13 @@ type FileLoaderUtils = {
   };
 };
 
-/**
- * Returns unified loader configurations to be used for various file types.
- *
- * Inspired by https://github.com/gatsbyjs/gatsby/blob/8e6e021014da310b9cc7d02e58c9b3efe938c665/packages/gatsby/src/utils/webpack-utils.ts#L447
- */
-export function getFileLoaderUtils(): FileLoaderUtils {
+// TODO this historical code is quite messy
+//  We should try to get rid of it and move to assets pipeline
+function createFileLoaderUtils({
+  isServer,
+}: {
+  isServer: boolean;
+}): FileLoaderUtils {
   // Files/images < urlLoaderLimit will be inlined as base64 strings directly in
   // the html
   const urlLoaderLimit = WEBPACK_URL_LOADER_LIMIT;
@@ -53,6 +73,7 @@ export function getFileLoaderUtils(): FileLoaderUtils {
       loader: require.resolve(`file-loader`),
       options: {
         name: fileLoaderFileName(options.folder),
+        emitFile: !isServer,
       },
     }),
     url: (options: {folder: AssetFolder}) => ({
@@ -61,6 +82,7 @@ export function getFileLoaderUtils(): FileLoaderUtils {
         limit: urlLoaderLimit,
         name: fileLoaderFileName(options.folder),
         fallback: require.resolve('file-loader'),
+        emitFile: !isServer,
       },
     }),
 
@@ -73,10 +95,19 @@ export function getFileLoaderUtils(): FileLoaderUtils {
       require.resolve('url-loader'),
     )}?limit=${urlLoaderLimit}&name=${fileLoaderFileName(
       'images',
-    )}&fallback=${escapePath(require.resolve('file-loader'))}!`,
+    )}&fallback=${escapePath(require.resolve('file-loader'))}${
+      isServer ? `&emitFile=false` : ''
+    }!`,
+    inlineMarkdownAssetImageFileLoader: `!${escapePath(
+      require.resolve('file-loader'),
+    )}?name=${fileLoaderFileName('images')}${
+      isServer ? `&emitFile=false` : ''
+    }!`,
     inlineMarkdownLinkFileLoader: `!${escapePath(
       require.resolve('file-loader'),
-    )}?name=${fileLoaderFileName('files')}!`,
+    )}?name=${fileLoaderFileName('files')}${
+      isServer ? `&emitFile=false` : ''
+    }!`,
   };
 
   const rules: FileLoaderUtils['rules'] = {
@@ -127,7 +158,6 @@ export function getFileLoaderUtils(): FileLoaderUtils {
                   ],
                 },
                 titleProp: true,
-                ref: ![path],
               },
             },
           ],
@@ -150,4 +180,17 @@ export function getFileLoaderUtils(): FileLoaderUtils {
   };
 
   return {loaders, rules};
+}
+
+const FileLoaderUtilsMap = {
+  server: createFileLoaderUtils({isServer: true}),
+  client: createFileLoaderUtils({isServer: false}),
+};
+
+/**
+ * Returns unified loader configurations to be used for various file types.
+ * Inspired by https://github.com/gatsbyjs/gatsby/blob/8e6e021014da310b9cc7d02e58c9b3efe938c665/packages/gatsby/src/utils/webpack-utils.ts#L447
+ */
+export function getFileLoaderUtils(isServer: boolean): FileLoaderUtils {
+  return isServer ? FileLoaderUtilsMap.server : FileLoaderUtilsMap.client;
 }

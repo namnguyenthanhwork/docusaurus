@@ -17,8 +17,15 @@ import {
   addTrailingPathSeparator,
   createAbsoluteFilePathMatcher,
   createSlugger,
+  resolveMarkdownLinkPathname,
   DEFAULT_PLUGIN_ID,
+  type TagsFile,
 } from '@docusaurus/utils';
+import {
+  getTagsFile,
+  getTagsFilePathsToWatch,
+} from '@docusaurus/utils-validation';
+import {createMDXLoaderRule} from '@docusaurus/mdx-loader';
 import {loadSidebars, resolveSidebarPathOption} from './sidebars';
 import {CategoryMetadataFilenamePattern} from './sidebars/generator';
 import {
@@ -28,8 +35,12 @@ import {
   type DocEnv,
   createDocsByIdIndex,
 } from './docs';
-import {readVersionsMetadata, toFullVersion} from './versions';
-import {cliDocsVersionCommand} from './cli';
+import {
+  getVersionFromSourceFilePath,
+  readVersionsMetadata,
+  toFullVersion,
+} from './versions';
+import cliDocs from './cli';
 import {VERSIONS_JSON_FILE} from './constants';
 import {toGlobalDataVersion} from './globalData';
 import {
@@ -39,6 +50,7 @@ import {
 import {createAllRoutes} from './routes';
 import {createSidebarsUtils} from './sidebars/utils';
 
+import {createContentHelpers} from './contentHelpers';
 import type {
   PluginOptions,
   DocMetadataBase,
@@ -48,12 +60,7 @@ import type {
   LoadedVersion,
 } from '@docusaurus/plugin-content-docs';
 import type {LoadContext, Plugin} from '@docusaurus/types';
-import type {
-  SourceToPermalink,
-  DocFile,
-  DocsMarkdownOption,
-  FullVersion,
-} from './types';
+import type {DocFile, FullVersion} from './types';
 import type {RuleSetRule} from 'webpack';
 
 export default async function pluginContentDocs(
@@ -73,11 +80,83 @@ export default async function pluginContentDocs(
     'docusaurus-plugin-content-docs',
   );
   const dataDir = path.join(pluginDataDirRoot, pluginId);
+  // TODO Docusaurus v4 breaking change
+  //  module aliasing should be automatic
+  //  we should never find local absolute FS paths in the codegen registry
   const aliasedSource = (source: string) =>
     `~docs/${posixPath(path.relative(pluginDataDirRoot, source))}`;
 
   // TODO env should be injected into all plugins
   const env = process.env.NODE_ENV as DocEnv;
+
+  const contentHelpers = createContentHelpers();
+
+  async function createDocsMDXLoaderRule(): Promise<RuleSetRule> {
+    const {
+      rehypePlugins,
+      remarkPlugins,
+      recmaPlugins,
+      beforeDefaultRehypePlugins,
+      beforeDefaultRemarkPlugins,
+    } = options;
+    const contentDirs = versionsMetadata
+      .flatMap(getContentPathList)
+      // Trailing slash is important, see https://github.com/facebook/docusaurus/pull/3970
+      .map(addTrailingPathSeparator);
+
+    return createMDXLoaderRule({
+      include: contentDirs,
+      options: {
+        useCrossCompilerCache:
+          siteConfig.future.experimental_faster.mdxCrossCompilerCache,
+        admonitions: options.admonitions,
+        remarkPlugins,
+        rehypePlugins,
+        recmaPlugins,
+        beforeDefaultRehypePlugins,
+        beforeDefaultRemarkPlugins,
+        staticDirs: siteConfig.staticDirectories.map((dir) =>
+          path.resolve(siteDir, dir),
+        ),
+        siteDir,
+        isMDXPartial: createAbsoluteFilePathMatcher(
+          options.exclude,
+          contentDirs,
+        ),
+        metadataPath: (mdxPath: string) => {
+          // Note that metadataPath must be the same/in-sync as
+          // the path from createData for each MDX.
+          const aliasedPath = aliasedSitePath(mdxPath, siteDir);
+          return path.join(dataDir, `${docuHash(aliasedPath)}.json`);
+        },
+        // createAssets converts relative paths to require() calls
+        createAssets: ({frontMatter}: {frontMatter: DocFrontMatter}) => ({
+          image: frontMatter.image,
+        }),
+        markdownConfig: siteConfig.markdown,
+        resolveMarkdownLink: ({linkPathname, sourceFilePath}) => {
+          const version = getVersionFromSourceFilePath(
+            sourceFilePath,
+            versionsMetadata,
+          );
+          const permalink = resolveMarkdownLinkPathname(linkPathname, {
+            sourceFilePath,
+            sourceToPermalink: contentHelpers.sourceToPermalink,
+            siteDir,
+            contentPaths: version,
+          });
+          if (permalink === null) {
+            logger.report(
+              siteConfig.onBrokenMarkdownLinks,
+            )`Docs markdown link couldn't be resolved: (url=${linkPathname}) in source file path=${sourceFilePath} for version number=${version.versionName}`;
+          }
+          return permalink;
+        },
+      },
+    });
+  }
+
+  const docsMDXLoaderRule = await createDocsMDXLoaderRule();
 
   return {
     name: 'docusaurus-plugin-content-docs',
@@ -99,7 +178,7 @@ export default async function pluginContentDocs(
         .arguments('<version>')
         .description(commandDescription)
         .action((version: unknown) =>
-          cliDocsVersionCommand(version, options, context),
+          cliDocs.cliDocsVersionCommand(version, options, context),
         );
     },
 
@@ -115,6 +194,10 @@ export default async function pluginContentDocs(
               (docsDirPath) => `${docsDirPath}/${pattern}`,
             ),
           ),
+          ...getTagsFilePathsToWatch({
+            contentPaths: version,
+            tags: options.tags,
+          }),
           `${version.contentPath}/**/${CategoryMetadataFilenamePattern}`,
         ];
         if (typeof version.sidebarFilePath === 'string') {
@@ -129,6 +212,7 @@ export default async function pluginContentDocs(
     async loadContent() {
       async function loadVersionDocsBase(
         versionMetadata: VersionMetadata,
+        tagsFile: TagsFile | null,
       ): Promise<DocMetadataBase[]> {
         const docFiles = await readVersionDocs(versionMetadata, options);
         if (docFiles.length === 0) {
@@ -148,6 +232,7 @@ export default async function pluginContentDocs(
             context,
             options,
             env,
+            tagsFile,
           });
         }
         return Promise.all(docFiles.map(processVersionDoc));
@@ -156,8 +241,14 @@ export default async function pluginContentDocs(
       async function doLoadVersion(
         versionMetadata: VersionMetadata,
       ): Promise<LoadedVersion> {
+        const tagsFile = await getTagsFile({
+          contentPaths: versionMetadata,
+          tags: options.tags,
+        });
+
         const docsBase: DocMetadataBase[] = await loadVersionDocsBase(
           versionMetadata,
+          tagsFile,
         );
 
         // TODO we only ever need draftIds in further code, not full draft items
@@ -223,6 +314,8 @@ export default async function pluginContentDocs(
     },
 
     async contentLoaded({content, actions}) {
+      contentHelpers.updateContent(content);
+
       const versions: FullVersion[] = content.loadedVersions.map(toFullVersion);
 
       await createAllRoutes({
@@ -240,83 +333,7 @@ export default async function pluginContentDocs(
       });
     },
 
-    configureWebpack(_config, isServer, utils, content) {
-      const {
-        rehypePlugins,
-        remarkPlugins,
-        beforeDefaultRehypePlugins,
-        beforeDefaultRemarkPlugins,
-      } = options;
-
-      function getSourceToPermalink(): SourceToPermalink {
-        const allDocs = content.loadedVersions.flatMap((v) => v.docs);
-        return Object.fromEntries(
-          allDocs.map(({source, permalink}) => [source, permalink]),
-        );
-      }
-
-      const docsMarkdownOptions: DocsMarkdownOption = {
-        siteDir,
-        sourceToPermalink: getSourceToPermalink(),
-        versionsMetadata,
-        onBrokenMarkdownLink: (brokenMarkdownLink) => {
-          logger.report(
-            siteConfig.onBrokenMarkdownLinks,
-          )`Docs markdown link couldn't be resolved: (url=${brokenMarkdownLink.link}) in path=${brokenMarkdownLink.filePath} for version number=${brokenMarkdownLink.contentPaths.versionName}`;
-        },
-      };
-
-      function createMDXLoaderRule(): RuleSetRule {
-        const contentDirs = versionsMetadata
-          .flatMap(getContentPathList)
-          // Trailing slash is important, see https://github.com/facebook/docusaurus/pull/3970
-          .map(addTrailingPathSeparator);
-        return {
-          test: /\.mdx?$/i,
-          include: contentDirs,
-          use: [
-            {
-              loader: require.resolve('@docusaurus/mdx-loader'),
-              options: {
-                admonitions: options.admonitions,
-                remarkPlugins,
-                rehypePlugins,
-                beforeDefaultRehypePlugins,
-                beforeDefaultRemarkPlugins,
-                staticDirs: siteConfig.staticDirectories.map((dir) =>
-                  path.resolve(siteDir, dir),
-                ),
-                siteDir,
-                isMDXPartial: createAbsoluteFilePathMatcher(
-                  options.exclude,
-                  contentDirs,
-                ),
-                metadataPath: (mdxPath: string) => {
-                  // Note that metadataPath must be the same/in-sync as
-                  // the path from createData for each MDX.
-                  const aliasedPath = aliasedSitePath(mdxPath, siteDir);
-                  return path.join(dataDir, `${docuHash(aliasedPath)}.json`);
-                },
-                // Assets allow to convert some relative images paths to
-                // require(...) calls
-                createAssets: ({
-                  frontMatter,
-                }: {
-                  frontMatter: DocFrontMatter;
-                }) => ({
-                  image: frontMatter.image,
-                }),
-                markdownConfig: siteConfig.markdown,
-              },
-            },
-            {
-              loader: path.resolve(__dirname, './markdown/index.js'),
-              options: docsMarkdownOptions,
-            },
-          ].filter(Boolean),
-        };
-      }
-
+    configureWebpack() {
       return {
         ignoreWarnings: [
           // Suppress warnings about non-existing of versions file.
@@ -330,7 +347,7 @@ export default async function pluginContentDocs(
           },
         },
         module: {
-          rules: [createMDXLoaderRule()],
+          rules: [docsMDXLoaderRule],
         },
       };
     },

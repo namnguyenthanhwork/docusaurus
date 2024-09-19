@@ -7,6 +7,19 @@ exports[`loadSiteConfig website with .cjs siteConfig 1`] = `
     "baseUrlIssueBanner": true,
     "clientModules": [],
     "customFields": {},
+    "future": {
+      "experimental_faster": {
+        "mdxCrossCompilerCache": false,
+        "rspackBundler": false,
+        "swcJsLoader": false,
+        "swcJsMinimizer": false,
+      },
+      "experimental_router": "browser",
+      "experimental_storage": {
+        "namespace": false,
+        "type": "localStorage",
+      },
+    },
     "headTags": [],
     "i18n": {
       "defaultLocale": "en",
@@ -17,6 +30,9 @@ exports[`loadSiteConfig website with .cjs siteConfig 1`] = `
       "path": "i18n",
     },
     "markdown": {
+      "anchors": {
+        "maintainCase": false,
+      },
       "format": "mdx",
       "mdx1Compat": {
         "admonitions": true,
@@ -24,9 +40,12 @@ exports[`loadSiteConfig website with .cjs siteConfig 1`] = `
         "headingIds": true,
       },
       "mermaid": false,
+      "parseFrontMatter": [Function],
       "preprocessor": undefined,
+      "remarkRehypeOptions": undefined,
     },
     "noIndex": false,
+    "onBrokenAnchors": "warn",
     "onBrokenLinks": "throw",
     "onBrokenMarkdownLinks": "warn",
     "onDuplicateRoutes": "warn",
@@ -48,13 +67,26 @@ exports[`loadSiteConfig website with .cjs siteConfig 1`] = `
 }
 `;
 
-exports[`loadSiteConfig website with valid async config 1`] = `
+exports[`loadSiteConfig website with ts + js config 1`] = `
 {
   "siteConfig": {
     "baseUrl": "/",
     "baseUrlIssueBanner": true,
     "clientModules": [],
     "customFields": {},
+    "future": {
+      "experimental_faster": {
+        "mdxCrossCompilerCache": false,
+        "rspackBundler": false,
+        "swcJsLoader": false,
+        "swcJsMinimizer": false,
+      },
+      "experimental_router": "browser",
+      "experimental_storage": {
+        "namespace": false,
+        "type": "localStorage",
+      },
+    },
     "headTags": [],
     "i18n": {
       "defaultLocale": "en",
@@ -65,6 +97,9 @@ exports[`loadSiteConfig website with valid async config 1`] = `
       "path": "i18n",
     },
     "markdown": {
+      "anchors": {
+        "maintainCase": false,
+      },
       "format": "mdx",
       "mdx1Compat": {
         "admonitions": true,
@@ -72,9 +107,347 @@ exports[`loadSiteConfig website with valid async config 1`] = `
         "headingIds": true,
       },
       "mermaid": false,
+      "parseFrontMatter": [Function],
       "preprocessor": undefined,
+      "remarkRehypeOptions": undefined,
     },
     "noIndex": false,
+    "onBrokenAnchors": "warn",
+    "onBrokenLinks": "throw",
+    "onBrokenMarkdownLinks": "warn",
+    "onDuplicateRoutes": "warn",
+    "plugins": [],
+    "presets": [],
+    "scripts": [],
+    "staticDirectories": [
+      "static",
+    ],
+    "stylesheets": [],
+    "tagline": "",
+    "themeConfig": {},
+    "themes": [],
+    "title": "TS title",
+    "titleDelimiter": "|",
+    "url": "https://example.com",
+  },
+  "siteConfigPath": "<PROJECT_ROOT>/packages/docusaurus/src/server/__tests__/__fixtures__/config/sites/ts-and-js-site/docusaurus.config.ts",
+}
+`;
+
+exports[`loadSiteConfig website with valid JS CJS config 1`] = `
+{
+  "siteConfig": {
+    "baseUrl": "/",
+    "baseUrlIssueBanner": true,
+    "clientModules": [],
+    "customFields": {},
+    "future": {
+      "experimental_faster": {
+        "mdxCrossCompilerCache": false,
+        "rspackBundler": false,
+        "swcJsLoader": false,
+        "swcJsMinimizer": false,
+      },
+      "experimental_router": "browser",
+      "experimental_storage": {
+        "namespace": false,
+        "type": "localStorage",
+      },
+    },
+    "headTags": [],
+    "i18n": {
+      "defaultLocale": "en",
+      "localeConfigs": {},
+      "locales": [
+        "en",
+      ],
+      "path": "i18n",
+    },
+    "markdown": {
+      "anchors": {
+        "maintainCase": false,
+      },
+      "format": "mdx",
+      "mdx1Compat": {
+        "admonitions": true,
+        "comments": true,
+        "headingIds": true,
+      },
+      "mermaid": false,
+      "parseFrontMatter": [Function],
+      "preprocessor": undefined,
+      "remarkRehypeOptions": undefined,
+    },
+    "noIndex": false,
+    "onBrokenAnchors": "warn",
+    "onBrokenLinks": "throw",
+    "onBrokenMarkdownLinks": "warn",
+    "onDuplicateRoutes": "warn",
+    "plugins": [],
+    "presets": [],
+    "scripts": [],
+    "staticDirectories": [
+      "static",
+    ],
+    "stylesheets": [],
+    "tagline": "",
+    "themeConfig": {},
+    "themes": [],
+    "title": "title",
+    "titleDelimiter": "|",
+    "url": "https://example.com",
+  },
+  "siteConfigPath": "<PROJECT_ROOT>/packages/docusaurus/src/server/__tests__/__fixtures__/config/configCJS.js",
+}
+`;
+
+exports[`loadSiteConfig website with valid JS ESM config 1`] = `
+{
+  "siteConfig": {
+    "baseUrl": "/",
+    "baseUrlIssueBanner": true,
+    "clientModules": [],
+    "customFields": {},
+    "future": {
+      "experimental_faster": {
+        "mdxCrossCompilerCache": false,
+        "rspackBundler": false,
+        "swcJsLoader": false,
+        "swcJsMinimizer": false,
+      },
+      "experimental_router": "browser",
+      "experimental_storage": {
+        "namespace": false,
+        "type": "localStorage",
+      },
+    },
+    "headTags": [],
+    "i18n": {
+      "defaultLocale": "en",
+      "localeConfigs": {},
+      "locales": [
+        "en",
+      ],
+      "path": "i18n",
+    },
+    "markdown": {
+      "anchors": {
+        "maintainCase": false,
+      },
+      "format": "mdx",
+      "mdx1Compat": {
+        "admonitions": true,
+        "comments": true,
+        "headingIds": true,
+      },
+      "mermaid": false,
+      "parseFrontMatter": [Function],
+      "preprocessor": undefined,
+      "remarkRehypeOptions": undefined,
+    },
+    "noIndex": false,
+    "onBrokenAnchors": "warn",
+    "onBrokenLinks": "throw",
+    "onBrokenMarkdownLinks": "warn",
+    "onDuplicateRoutes": "warn",
+    "plugins": [],
+    "presets": [],
+    "scripts": [],
+    "staticDirectories": [
+      "static",
+    ],
+    "stylesheets": [],
+    "tagline": "",
+    "themeConfig": {},
+    "themes": [],
+    "title": "title",
+    "titleDelimiter": "|",
+    "url": "https://example.com",
+  },
+  "siteConfigPath": "<PROJECT_ROOT>/packages/docusaurus/src/server/__tests__/__fixtures__/config/configESM.js",
+}
+`;
+
+exports[`loadSiteConfig website with valid TypeScript CJS config 1`] = `
+{
+  "siteConfig": {
+    "baseUrl": "/",
+    "baseUrlIssueBanner": true,
+    "clientModules": [],
+    "customFields": {},
+    "future": {
+      "experimental_faster": {
+        "mdxCrossCompilerCache": false,
+        "rspackBundler": false,
+        "swcJsLoader": false,
+        "swcJsMinimizer": false,
+      },
+      "experimental_router": "browser",
+      "experimental_storage": {
+        "namespace": false,
+        "type": "localStorage",
+      },
+    },
+    "headTags": [],
+    "i18n": {
+      "defaultLocale": "en",
+      "localeConfigs": {},
+      "locales": [
+        "en",
+      ],
+      "path": "i18n",
+    },
+    "markdown": {
+      "anchors": {
+        "maintainCase": false,
+      },
+      "format": "mdx",
+      "mdx1Compat": {
+        "admonitions": true,
+        "comments": true,
+        "headingIds": true,
+      },
+      "mermaid": false,
+      "parseFrontMatter": [Function],
+      "preprocessor": undefined,
+      "remarkRehypeOptions": undefined,
+    },
+    "noIndex": false,
+    "onBrokenAnchors": "warn",
+    "onBrokenLinks": "throw",
+    "onBrokenMarkdownLinks": "warn",
+    "onDuplicateRoutes": "warn",
+    "plugins": [],
+    "presets": [],
+    "scripts": [],
+    "staticDirectories": [
+      "static",
+    ],
+    "stylesheets": [],
+    "tagline": "",
+    "themeConfig": {},
+    "themes": [],
+    "title": "title",
+    "titleDelimiter": "|",
+    "url": "https://example.com",
+  },
+  "siteConfigPath": "<PROJECT_ROOT>/packages/docusaurus/src/server/__tests__/__fixtures__/config/configCJS.ts",
+}
+`;
+
+exports[`loadSiteConfig website with valid TypeScript ESM config 1`] = `
+{
+  "siteConfig": {
+    "baseUrl": "/",
+    "baseUrlIssueBanner": true,
+    "clientModules": [],
+    "customFields": {},
+    "future": {
+      "experimental_faster": {
+        "mdxCrossCompilerCache": false,
+        "rspackBundler": false,
+        "swcJsLoader": false,
+        "swcJsMinimizer": false,
+      },
+      "experimental_router": "browser",
+      "experimental_storage": {
+        "namespace": false,
+        "type": "localStorage",
+      },
+    },
+    "headTags": [],
+    "i18n": {
+      "defaultLocale": "en",
+      "localeConfigs": {},
+      "locales": [
+        "en",
+      ],
+      "path": "i18n",
+    },
+    "markdown": {
+      "anchors": {
+        "maintainCase": false,
+      },
+      "format": "mdx",
+      "mdx1Compat": {
+        "admonitions": true,
+        "comments": true,
+        "headingIds": true,
+      },
+      "mermaid": false,
+      "parseFrontMatter": [Function],
+      "preprocessor": undefined,
+      "remarkRehypeOptions": undefined,
+    },
+    "noIndex": false,
+    "onBrokenAnchors": "warn",
+    "onBrokenLinks": "throw",
+    "onBrokenMarkdownLinks": "warn",
+    "onDuplicateRoutes": "warn",
+    "plugins": [],
+    "presets": [],
+    "scripts": [],
+    "staticDirectories": [
+      "static",
+    ],
+    "stylesheets": [],
+    "tagline": "",
+    "themeConfig": {},
+    "themes": [],
+    "title": "title",
+    "titleDelimiter": "|",
+    "url": "https://example.com",
+  },
+  "siteConfigPath": "<PROJECT_ROOT>/packages/docusaurus/src/server/__tests__/__fixtures__/config/configESM.ts",
+}
+`;
+
+exports[`loadSiteConfig website with valid async config 1`] = `
+{
+  "siteConfig": {
+    "baseUrl": "/",
+    "baseUrlIssueBanner": true,
+    "clientModules": [],
+    "customFields": {},
+    "future": {
+      "experimental_faster": {
+        "mdxCrossCompilerCache": false,
+        "rspackBundler": false,
+        "swcJsLoader": false,
+        "swcJsMinimizer": false,
+      },
+      "experimental_router": "browser",
+      "experimental_storage": {
+        "namespace": false,
+        "type": "localStorage",
+      },
+    },
+    "headTags": [],
+    "i18n": {
+      "defaultLocale": "en",
+      "localeConfigs": {},
+      "locales": [
+        "en",
+      ],
+      "path": "i18n",
+    },
+    "markdown": {
+      "anchors": {
+        "maintainCase": false,
+      },
+      "format": "mdx",
+      "mdx1Compat": {
+        "admonitions": true,
+        "comments": true,
+        "headingIds": true,
+      },
+      "mermaid": false,
+      "parseFrontMatter": [Function],
+      "preprocessor": undefined,
+      "remarkRehypeOptions": undefined,
+    },
+    "noIndex": false,
+    "onBrokenAnchors": "warn",
     "onBrokenLinks": "throw",
     "onBrokenMarkdownLinks": "warn",
     "onDuplicateRoutes": "warn",
@@ -105,6 +478,19 @@ exports[`loadSiteConfig website with valid async config creator function 1`] = `
     "baseUrlIssueBanner": true,
     "clientModules": [],
     "customFields": {},
+    "future": {
+      "experimental_faster": {
+        "mdxCrossCompilerCache": false,
+        "rspackBundler": false,
+        "swcJsLoader": false,
+        "swcJsMinimizer": false,
+      },
+      "experimental_router": "browser",
+      "experimental_storage": {
+        "namespace": false,
+        "type": "localStorage",
+      },
+    },
     "headTags": [],
     "i18n": {
       "defaultLocale": "en",
@@ -115,6 +501,9 @@ exports[`loadSiteConfig website with valid async config creator function 1`] = `
       "path": "i18n",
     },
     "markdown": {
+      "anchors": {
+        "maintainCase": false,
+      },
       "format": "mdx",
       "mdx1Compat": {
         "admonitions": true,
@@ -122,9 +511,12 @@ exports[`loadSiteConfig website with valid async config creator function 1`] = `
         "headingIds": true,
       },
       "mermaid": false,
+      "parseFrontMatter": [Function],
       "preprocessor": undefined,
+      "remarkRehypeOptions": undefined,
     },
     "noIndex": false,
+    "onBrokenAnchors": "warn",
     "onBrokenLinks": "throw",
     "onBrokenMarkdownLinks": "warn",
     "onDuplicateRoutes": "warn",
@@ -155,6 +547,19 @@ exports[`loadSiteConfig website with valid config creator function 1`] = `
     "baseUrlIssueBanner": true,
     "clientModules": [],
     "customFields": {},
+    "future": {
+      "experimental_faster": {
+        "mdxCrossCompilerCache": false,
+        "rspackBundler": false,
+        "swcJsLoader": false,
+        "swcJsMinimizer": false,
+      },
+      "experimental_router": "browser",
+      "experimental_storage": {
+        "namespace": false,
+        "type": "localStorage",
+      },
+    },
     "headTags": [],
     "i18n": {
       "defaultLocale": "en",
@@ -165,6 +570,9 @@ exports[`loadSiteConfig website with valid config creator function 1`] = `
       "path": "i18n",
     },
     "markdown": {
+      "anchors": {
+        "maintainCase": false,
+      },
       "format": "mdx",
       "mdx1Compat": {
         "admonitions": true,
@@ -172,9 +580,12 @@ exports[`loadSiteConfig website with valid config creator function 1`] = `
         "headingIds": true,
       },
       "mermaid": false,
+      "parseFrontMatter": [Function],
       "preprocessor": undefined,
+      "remarkRehypeOptions": undefined,
     },
     "noIndex": false,
+    "onBrokenAnchors": "warn",
     "onBrokenLinks": "throw",
     "onBrokenMarkdownLinks": "warn",
     "onDuplicateRoutes": "warn",
@@ -208,6 +619,19 @@ exports[`loadSiteConfig website with valid siteConfig 1`] = `
     ],
     "customFields": {},
     "favicon": "img/docusaurus.ico",
+    "future": {
+      "experimental_faster": {
+        "mdxCrossCompilerCache": false,
+        "rspackBundler": false,
+        "swcJsLoader": false,
+        "swcJsMinimizer": false,
+      },
+      "experimental_router": "browser",
+      "experimental_storage": {
+        "namespace": false,
+        "type": "localStorage",
+      },
+    },
     "headTags": [],
     "i18n": {
       "defaultLocale": "en",
@@ -218,6 +642,9 @@ exports[`loadSiteConfig website with valid siteConfig 1`] = `
       "path": "i18n",
     },
     "markdown": {
+      "anchors": {
+        "maintainCase": false,
+      },
       "format": "mdx",
       "mdx1Compat": {
         "admonitions": true,
@@ -225,9 +652,12 @@ exports[`loadSiteConfig website with valid siteConfig 1`] = `
         "headingIds": true,
       },
       "mermaid": false,
+      "parseFrontMatter": [Function],
       "preprocessor": undefined,
+      "remarkRehypeOptions": undefined,
     },
     "noIndex": false,
+    "onBrokenAnchors": "warn",
     "onBrokenLinks": "throw",
     "onBrokenMarkdownLinks": "warn",
     "onDuplicateRoutes": "warn",

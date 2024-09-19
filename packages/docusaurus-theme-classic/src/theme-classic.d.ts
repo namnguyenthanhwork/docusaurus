@@ -185,6 +185,30 @@ declare module '@theme/BackToTopButton' {
   export default function BackToTopButton(): JSX.Element;
 }
 
+declare module '@theme/Blog/Components/Author' {
+  import type {Author} from '@docusaurus/plugin-content-blog';
+
+  export interface Props {
+    readonly as?: 'h1' | 'h2';
+    readonly author: Author;
+    readonly className?: string;
+    readonly count?: number;
+  }
+
+  export default function BlogAuthor(props: Props): JSX.Element;
+}
+
+declare module '@theme/Blog/Components/Author/Socials' {
+  import type {Author} from '@docusaurus/plugin-content-blog';
+
+  export interface Props {
+    readonly author: Author;
+    readonly className?: string;
+  }
+
+  export default function BlogAuthorSocials(props: Props): JSX.Element;
+}
+
 declare module '@theme/BlogListPaginator' {
   import type {BlogPaginatedMetadata} from '@docusaurus/plugin-content-blog';
 
@@ -192,6 +216,19 @@ declare module '@theme/BlogListPaginator' {
     readonly metadata: BlogPaginatedMetadata;
   }
   export default function BlogListPaginator(props: Props): JSX.Element;
+}
+
+declare module '@theme/BlogSidebar/Content' {
+  import type {ReactNode, ComponentType} from 'react';
+  import type {BlogSidebarItem} from '@docusaurus/plugin-content-blog';
+
+  export interface Props {
+    readonly items: BlogSidebarItem[];
+    readonly ListComponent: ComponentType<{items: BlogSidebarItem[]}>;
+    readonly yearGroupHeadingClassName?: string;
+  }
+
+  export default function BlogSidebarContent(props: Props): ReactNode;
 }
 
 declare module '@theme/BlogSidebar/Desktop' {
@@ -278,17 +315,6 @@ declare module '@theme/BlogPostItem/Header/Info' {
   export default function BlogPostItemHeaderInfo(): JSX.Element;
 }
 
-declare module '@theme/BlogPostItem/Header/Author' {
-  import type {PropBlogPostContent} from '@docusaurus/plugin-content-blog';
-
-  export interface Props {
-    readonly author: PropBlogPostContent['metadata']['authors'][number];
-    readonly className?: string;
-  }
-
-  export default function BlogPostItemHeaderAuthor(props: Props): JSX.Element;
-}
-
 declare module '@theme/BlogPostItem/Header/Authors' {
   export interface Props {
     readonly className?: string;
@@ -363,6 +389,14 @@ declare module '@theme/CodeBlock' {
   export default function CodeBlock(props: Props): JSX.Element;
 }
 
+declare module '@theme/CodeInline' {
+  import type {ComponentProps} from 'react';
+
+  export interface Props extends ComponentProps<'code'> {}
+
+  export default function CodeInline(props: Props): JSX.Element;
+}
+
 declare module '@theme/CodeBlock/CopyButton' {
   export interface Props {
     readonly code: string;
@@ -400,23 +434,20 @@ declare module '@theme/CodeBlock/Content/String' {
 }
 
 declare module '@theme/CodeBlock/Line' {
-  import type {ComponentProps} from 'react';
-  import type Highlight from 'prism-react-renderer';
-
-  // Lib does not make this easy
-  type RenderProps = Parameters<
-    ComponentProps<typeof Highlight>['children']
-  >[0];
-  type GetLineProps = RenderProps['getLineProps'];
-  type GetTokenProps = RenderProps['getTokenProps'];
-  type Token = RenderProps['tokens'][number][number];
+  import type {
+    LineInputProps,
+    LineOutputProps,
+    Token,
+    TokenInputProps,
+    TokenOutputProps,
+  } from 'prism-react-renderer';
 
   export interface Props {
     readonly line: Token[];
     readonly classNames: string[] | undefined;
     readonly showLineNumbers: boolean;
-    readonly getLineProps: GetLineProps;
-    readonly getTokenProps: GetTokenProps;
+    readonly getLineProps: (input: LineInputProps) => LineOutputProps;
+    readonly getTokenProps: (input: TokenInputProps) => TokenOutputProps;
   }
 
   export default function CodeBlockLine(props: Props): JSX.Element;
@@ -671,6 +702,16 @@ declare module '@theme/DocVersionSuggestions' {
   export default function DocVersionSuggestions(): JSX.Element;
 }
 
+declare module '@theme/EditMetaRow' {
+  export interface Props {
+    readonly className: string;
+    readonly editUrl: string | null | undefined;
+    readonly lastUpdatedAt: number | undefined;
+    readonly lastUpdatedBy: string | undefined;
+  }
+  export default function EditMetaRow(props: Props): JSX.Element;
+}
+
 declare module '@theme/EditThisPage' {
   export interface Props {
     readonly editUrl: string;
@@ -819,7 +860,6 @@ declare module '@theme/SearchMetadata' {
 declare module '@theme/LastUpdated' {
   export interface Props {
     readonly lastUpdatedAt?: number;
-    readonly formattedLastUpdatedAt?: string;
     readonly lastUpdatedBy?: string;
   }
 
@@ -860,6 +900,14 @@ declare module '@theme/MDXComponents/Ul' {
   export interface Props extends ComponentProps<'ul'> {}
 
   export default function MDXUl(props: Props): JSX.Element;
+}
+
+declare module '@theme/MDXComponents/Li' {
+  import type {ComponentProps} from 'react';
+
+  export interface Props extends ComponentProps<'li'> {}
+
+  export default function MDXLi(props: Props): JSX.Element;
 }
 
 declare module '@theme/MDXComponents/Img' {
@@ -1479,6 +1527,54 @@ declare module '@theme/Icon/WordWrap' {
   export default function IconWordWrap(props: Props): JSX.Element;
 }
 
+declare module '@theme/Icon/Socials/Twitter' {
+  import type {ComponentProps} from 'react';
+
+  export interface Props extends ComponentProps<'svg'> {}
+
+  export default function Twitter(props: Props): JSX.Element;
+}
+
+declare module '@theme/Icon/Socials/GitHub' {
+  import type {ComponentProps} from 'react';
+
+  export interface Props extends ComponentProps<'svg'> {}
+
+  export default function Github(props: Props): JSX.Element;
+}
+
+declare module '@theme/Icon/Socials/X' {
+  import type {ComponentProps} from 'react';
+
+  export interface Props extends ComponentProps<'svg'> {}
+
+  export default function X(props: Props): JSX.Element;
+}
+
+declare module '@theme/Icon/Socials/LinkedIn' {
+  import type {ComponentProps} from 'react';
+
+  export interface Props extends ComponentProps<'svg'> {}
+
+  export default function LinkedIn(props: Props): JSX.Element;
+}
+
+declare module '@theme/Icon/Socials/Default' {
+  import type {ComponentProps} from 'react';
+
+  export interface Props extends ComponentProps<'svg'> {}
+
+  export default function DefaultSocialIcon(props: Props): JSX.Element;
+}
+
+declare module '@theme/Icon/Socials/StackOverflow' {
+  import type {ComponentProps} from 'react';
+
+  export interface Props extends ComponentProps<'svg'> {}
+
+  export default function StackOverflow(props: Props): JSX.Element;
+}
+
 declare module '@theme/TagsListByLetter' {
   import type {TagsListItem} from '@docusaurus/utils';
 
@@ -1506,12 +1602,32 @@ declare module '@theme/Tag' {
   export default function Tag(props: Props): JSX.Element;
 }
 
-declare module '@theme/Unlisted' {
+declare module '@theme/ContentVisibility' {
+  export interface Props {
+    readonly metadata: {
+      // the visibility metadata our 3 content plugins share in common
+      readonly unlisted: boolean;
+      readonly frontMatter: {draft?: boolean; unlisted?: boolean};
+    };
+  }
+
+  export default function ContentVisibility(props: Props): JSX.Element;
+}
+
+declare module '@theme/ContentVisibility/Unlisted' {
   export interface Props {
     className?: string;
   }
 
   export default function Unlisted(props: Props): JSX.Element;
+}
+
+declare module '@theme/ContentVisibility/Draft' {
+  export interface Props {
+    className?: string;
+  }
+
+  export default function Draft(props: Props): JSX.Element;
 }
 
 declare module '@theme/prism-include-languages' {

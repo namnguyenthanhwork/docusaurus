@@ -7,7 +7,9 @@
 
 import {mdxLoader} from './loader';
 
-import type {TOCItem as TOCItemImported} from './remark/toc';
+import type {TOCItem as TOCItemImported} from './remark/toc/types';
+
+export {createMDXLoaderRule, createMDXLoaderItem} from './createMDXLoader';
 
 export default mdxLoader;
 
@@ -35,5 +37,6 @@ export type LoadedMDXContent<FrontMatter, Metadata, Assets = undefined> = {
   (): JSX.Element;
 };
 
-export type {Options, MDXPlugin} from './loader';
+export type {MDXPlugin} from './loader';
 export type {MDXOptions} from './processor';
+export type {Options} from './options';

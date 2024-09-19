@@ -12,22 +12,17 @@ import {
   toMessageRelativeFilePath,
   posixPath,
   escapePath,
-  getFileLoaderUtils,
   findAsyncSequential,
+  getFileLoaderUtils,
 } from '@docusaurus/utils';
-import visit from 'unist-util-visit';
 import escapeHtml from 'escape-html';
-import {assetRequireAttributeValue} from '../utils';
+import {assetRequireAttributeValue, transformNode} from '../utils';
 // @ts-expect-error: TODO see https://github.com/microsoft/TypeScript/issues/49721
 import type {Transformer} from 'unified';
 // @ts-expect-error: TODO see https://github.com/microsoft/TypeScript/issues/49721
 import type {MdxJsxTextElement} from 'mdast-util-mdx';
 import type {Parent} from 'unist';
 import type {Link, Literal} from 'mdast';
-
-const {
-  loaders: {inlineMarkdownLinkFileLoader},
-} = getFileLoaderUtils();
 
 type PluginOptions = {
   staticDirs: string[];
@@ -36,6 +31,7 @@ type PluginOptions = {
 
 type Context = PluginOptions & {
   filePath: string;
+  inlineMarkdownLinkFileLoader: string;
 };
 
 type Target = [node: Link, index: number, parent: Parent];
@@ -46,7 +42,7 @@ type Target = [node: Link, index: number, parent: Parent];
 async function toAssetRequireNode(
   [node]: Target,
   assetPath: string,
-  filePath: string,
+  context: Context,
 ) {
   // MdxJsxTextElement => see https://github.com/facebook/docusaurus/pull/8288#discussion_r1125871405
   const jsxNode = node as unknown as MdxJsxTextElement;
@@ -54,7 +50,7 @@ async function toAssetRequireNode(
 
   // require("assets/file.pdf") means requiring from a package called assets
   const relativeAssetPath = `./${posixPath(
-    path.relative(path.dirname(filePath), assetPath),
+    path.relative(path.dirname(context.filePath), assetPath),
   )}`;
 
   const parsedUrl = url.parse(node.url);
@@ -66,12 +62,42 @@ async function toAssetRequireNode(
     path.extname(relativeAssetPath) === '.json'
       ? `${relativeAssetPath.replace('.json', '.raw')}!=`
       : ''
-  }${inlineMarkdownLinkFileLoader}${escapePath(relativeAssetPath) + search}`;
+  }${context.inlineMarkdownLinkFileLoader}${
+    escapePath(relativeAssetPath) + search
+  }`;
 
   attributes.push({
     type: 'mdxJsxAttribute',
     name: 'target',
     value: '_blank',
+  });
+
+  // Assets are not routes, and are required by Webpack already
+  // They should not trigger the broken link checker
+  attributes.push({
+    type: 'mdxJsxAttribute',
+    name: 'data-noBrokenLinkCheck',
+    value: {
+      type: 'mdxJsxAttributeValueExpression',
+      value: 'true',
+      data: {
+        estree: {
+          type: 'Program',
+          body: [
+            {
+              type: 'ExpressionStatement',
+              expression: {
+                type: 'Literal',
+                value: true,
+                raw: 'true',
+              },
+            },
+          ],
+          sourceType: 'module',
+          comments: [],
+        },
+      },
+    },
   });
 
   attributes.push({
@@ -90,14 +116,12 @@ async function toAssetRequireNode(
 
   const {children} = node;
 
-  Object.keys(jsxNode).forEach(
-    (key) => delete jsxNode[key as keyof typeof jsxNode],
-  );
-
-  jsxNode.type = 'mdxJsxTextElement';
-  jsxNode.name = 'a';
-  jsxNode.attributes = attributes;
-  jsxNode.children = children;
+  transformNode(jsxNode, {
+    type: 'mdxJsxTextElement',
+    name: 'a',
+    attributes,
+    children,
+  });
 }
 
 async function ensureAssetFileExist(assetPath: string, sourceFilePath: string) {
@@ -171,20 +195,27 @@ async function processLinkNode(target: Target, context: Context) {
     context,
   );
   if (assetPath) {
-    await toAssetRequireNode(target, assetPath, context.filePath);
+    await toAssetRequireNode(target, assetPath, context);
   }
 }
 
 export default function plugin(options: PluginOptions): Transformer {
   return async (root, vfile) => {
+    const {visit} = await import('unist-util-visit');
+
+    const fileLoaderUtils = getFileLoaderUtils(
+      vfile.data.compilerName === 'server',
+    );
+    const context: Context = {
+      ...options,
+      filePath: vfile.path!,
+      inlineMarkdownLinkFileLoader:
+        fileLoaderUtils.loaders.inlineMarkdownLinkFileLoader,
+    };
+
     const promises: Promise<void>[] = [];
     visit(root, 'link', (node: Link, index, parent) => {
-      promises.push(
-        processLinkNode([node, index, parent!], {
-          ...options,
-          filePath: vfile.path!,
-        }),
-      );
+      promises.push(processLinkNode([node, index, parent!], context));
     });
     await Promise.all(promises);
   };

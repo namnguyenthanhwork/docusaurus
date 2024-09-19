@@ -1,0 +1,61 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+import path from 'path';
+import fs from 'fs-extra';
+import {getCopyPlugin} from '../currentBundler';
+import type {CurrentBundler, Props} from '@docusaurus/types';
+import type {WebpackPluginInstance} from 'webpack';
+
+export async function createStaticDirectoriesCopyPlugin({
+  props,
+  currentBundler,
+}: {
+  props: Props;
+  currentBundler: CurrentBundler;
+}): Promise<WebpackPluginInstance | undefined> {
+  const CopyPlugin = await getCopyPlugin({
+    currentBundler,
+  });
+
+  const {
+    outDir,
+    siteDir,
+    siteConfig: {staticDirectories: staticDirectoriesOption},
+  } = props;
+
+  // The staticDirectories option can contain empty directories, or non-existent
+  // directories (e.g. user deleted `static`). Instead of issuing an error, we
+  // just silently filter them out, because user could have never configured it
+  // in the first place (the default option should always "work").
+  const staticDirectories: string[] = (
+    await Promise.all(
+      staticDirectoriesOption.map(async (dir) => {
+        const staticDir = path.resolve(siteDir, dir);
+        if (
+          (await fs.pathExists(staticDir)) &&
+          (await fs.readdir(staticDir)).length > 0
+        ) {
+          return staticDir;
+        }
+        return '';
+      }),
+    )
+  ).filter(Boolean);
+
+  if (staticDirectories.length === 0) {
+    return undefined;
+  }
+
+  return new CopyPlugin({
+    patterns: staticDirectories.map((dir) => ({
+      from: dir,
+      to: outDir,
+      toType: 'dir',
+    })),
+  });
+}

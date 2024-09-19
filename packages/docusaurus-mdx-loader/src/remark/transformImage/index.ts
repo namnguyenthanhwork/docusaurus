@@ -13,24 +13,19 @@ import {
   toMessageRelativeFilePath,
   posixPath,
   escapePath,
-  getFileLoaderUtils,
   findAsyncSequential,
+  getFileLoaderUtils,
 } from '@docusaurus/utils';
-import visit from 'unist-util-visit';
 import escapeHtml from 'escape-html';
 import sizeOf from 'image-size';
 import logger from '@docusaurus/logger';
-import {assetRequireAttributeValue} from '../utils';
+import {assetRequireAttributeValue, transformNode} from '../utils';
 // @ts-expect-error: TODO see https://github.com/microsoft/TypeScript/issues/49721
 import type {Transformer} from 'unified';
 // @ts-expect-error: TODO see https://github.com/microsoft/TypeScript/issues/49721
 import type {MdxJsxTextElement} from 'mdast-util-mdx';
 import type {Image} from 'mdast';
 import type {Parent} from 'unist';
-
-const {
-  loaders: {inlineMarkdownImageFileLoader},
-} = getFileLoaderUtils();
 
 type PluginOptions = {
   staticDirs: string[];
@@ -39,6 +34,7 @@ type PluginOptions = {
 
 type Context = PluginOptions & {
   filePath: string;
+  inlineMarkdownImageFileLoader: string;
 };
 
 type Target = [node: Image, index: number, parent: Parent];
@@ -46,21 +42,21 @@ type Target = [node: Image, index: number, parent: Parent];
 async function toImageRequireNode(
   [node]: Target,
   imagePath: string,
-  filePath: string,
+  context: Context,
 ) {
   // MdxJsxTextElement => see https://github.com/facebook/docusaurus/pull/8288#discussion_r1125871405
   const jsxNode = node as unknown as MdxJsxTextElement;
   const attributes: MdxJsxTextElement['attributes'] = [];
 
   let relativeImagePath = posixPath(
-    path.relative(path.dirname(filePath), imagePath),
+    path.relative(path.dirname(context.filePath), imagePath),
   );
   relativeImagePath = `./${relativeImagePath}`;
 
   const parsedUrl = url.parse(node.url);
   const hash = parsedUrl.hash ?? '';
   const search = parsedUrl.search ?? '';
-  const requireString = `${inlineMarkdownImageFileLoader}${
+  const requireString = `${context.inlineMarkdownImageFileLoader}${
     escapePath(relativeImagePath) + search
   }`;
   if (node.alt) {
@@ -110,14 +106,12 @@ ${(err as Error).message}`;
     }
   }
 
-  Object.keys(jsxNode).forEach(
-    (key) => delete jsxNode[key as keyof typeof jsxNode],
-  );
-
-  jsxNode.type = 'mdxJsxTextElement';
-  jsxNode.name = 'img';
-  jsxNode.attributes = attributes;
-  jsxNode.children = [];
+  transformNode(jsxNode, {
+    type: 'mdxJsxTextElement',
+    name: 'img',
+    attributes,
+    children: [],
+  });
 }
 
 async function ensureImageFileExist(imagePath: string, sourceFilePath: string) {
@@ -189,19 +183,26 @@ async function processImageNode(target: Target, context: Context) {
   // We try to convert image urls without protocol to images with require calls
   // going through webpack ensures that image assets exist at build time
   const imagePath = await getImageAbsolutePath(parsedUrl.pathname, context);
-  await toImageRequireNode(target, imagePath, context.filePath);
+  await toImageRequireNode(target, imagePath, context);
 }
 
 export default function plugin(options: PluginOptions): Transformer {
   return async (root, vfile) => {
+    const {visit} = await import('unist-util-visit');
+
+    const fileLoaderUtils = getFileLoaderUtils(
+      vfile.data.compilerName === 'server',
+    );
+    const context: Context = {
+      ...options,
+      filePath: vfile.path!,
+      inlineMarkdownImageFileLoader:
+        fileLoaderUtils.loaders.inlineMarkdownImageFileLoader,
+    };
+
     const promises: Promise<void>[] = [];
     visit(root, 'image', (node: Image, index, parent) => {
-      promises.push(
-        processImageNode([node, index, parent!], {
-          ...options,
-          filePath: vfile.path!,
-        }),
-      );
+      promises.push(processImageNode([node, index, parent!], context));
     });
     await Promise.all(promises);
   };
